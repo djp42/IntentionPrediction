@@ -6,9 +6,12 @@
 ## Project History 
 This work started as a class project for CS 229 at Stanford University in Spring of 2016. 
 I worked with alin719 at that time, and that is when much of the data processing was done, although the overall goal was much different.
+
 That summer I did an REU (research experience as an undergraduate) with the Stanford Intelligent Systems Laboratory (SISL) under the mentorship of Mykel Kochenderfer and continued the work, pivotting away from the original goal and focusing on the high level intention prediction.
+
 In the Fall of that year (2016) I further continued the project through the class project for CS 221.
 It was here that I made much of the method of experimentation and analysis better, through the changes to cross validation, etc. 
+
 That winter and spring I worked with Tim Wheeler to perform significant revisions to the paper and generally clarify everything, continuing under the supervision of Mykel Kochenderfer at SISL.
 We had the honor of presenting the results at the IEEE Intelligent Vehicles Symposium (IVS) 2017, and this code is what was used in that paper:
     Generalizable Intention Prediction of Human Drivers at Intersections (https://ieeexplore.ieee.org/document/7995948/).
