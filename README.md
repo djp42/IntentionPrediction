@@ -1,7 +1,7 @@
 # IntentionPrediction
 ### This repo is used to predict the intentions of human drivers as the approach intersections. 
 ### It is the product of numerous smaller projects, and as such may not be the most interpretable. 
-### As I have time I will continue to clean it up.
+### As I (djp42) have time I will continue to clean it up.
 
 ## Project History 
 This work started as a class project for CS 229 at Stanford University in Spring of 2016. 
