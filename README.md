@@ -115,8 +115,12 @@ In lib:
  
 ## TODO
 (This is mostly for me, but also if you want to work on it!)
+
     1. Go through and verify the setup process again. I am sure things have been deprecated and probably don't work as intended
+
     2. Clean up files, removing what is unnecessary to the intention prediction. 
+
     3. Clean up code. There is definitely a lot of redundant and messy code, that I should probably clean up at some point.
+
     4. Extend with other useful things
 
