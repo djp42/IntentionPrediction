@@ -11,7 +11,9 @@ before_script:
   - pip install -U -r requirements_test.txt
 
 script:
- - pytest --cov-config=.coveragerc --cov=IntentionPrediction
+  - ./build.sh
+  - source ${HOME}/.bashrc
+  - pytest --cov-config=.coveragerc --cov=.
 
 after_success:
   - coveralls

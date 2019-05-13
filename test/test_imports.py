@@ -1,5 +1,6 @@
+import os
 import sys
-sys.path.append("..")
+sys.path.append(os.environ["INTENTPRED_PATH"])
 
 from lib import constants
 

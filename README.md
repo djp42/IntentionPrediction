@@ -123,6 +123,7 @@ In bin:
 * Add some unittests.
 * Use `argparse`
 * Clean up files, removing what is unnecessary to the intention prediction. 
+* `INTENTPRED_PATH`
 * Upgrade to newer version of `tensorflow`
 * Julia install instructions / 1.0 support for bayes-net
 * Check use of `DistInd` in `score_utils.py` for confusion matrix (it does not have a test num so it may be incorrect usage for test 0...?).
