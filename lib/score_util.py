@@ -3,7 +3,7 @@
 Created on Fri Aug 12 15:53:05 2016
 
 utilities to help with evaluating the SVM 
-@author: LordPhillips
+@author: djp42
 """
 
 from sklearn import metrics
@@ -564,9 +564,9 @@ def print_confusion_matrix(actuals, predictions, features):
     if features != None:
         if len(features.shape) == 3:
             features = features.reshape((features.shape[0]*features.shape[1], features.shape[2]))
-        #distInd = 7
-        #if testnum[0] == "1":
         distInd = 11
+        if features.shape[1] <= 11:
+            distInd = 7
         for i in range(len(predictions)):
             dist = int(features[i, distInd])
             if dist > 20:continue

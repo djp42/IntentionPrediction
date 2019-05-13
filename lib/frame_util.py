@@ -22,7 +22,7 @@ FRAME_TIME = 0.1
 # This has heuristics to speed up coding, also can only be done with these 
 # two files anyway...
 def combineTrajFiles(filepath1, filepath2, overlapStartFrame=10201, maxVid1=1438):
-    newFilename = 'trajectories-0830am-0900am.txt'
+    newFilename = 'trajectories-lankershim.txt'
     filename1 = os.path.basename(filepath1)
     outpath = filepath1[:-len(filename1)]+newFilename
     infile2 = open(filepath2, 'r')

@@ -3,7 +3,7 @@
 Created on Mon Aug 29 10:59:36 2016
 
 Validation script
-@author: LordPhillips
+@author: djp42
 """
 
 

@@ -9,7 +9,7 @@ run with:
 $ nohup python3 -u program.py | ts | tee ./<logfile>
 Change the model in run() function
 
-@author: LordPhillips
+@author: djp42
 """
 
 import numpy as np
@@ -577,7 +577,7 @@ def doStuffForPeachtree():
     print(newFile)
     return(newFile)
 
-def combineThose2files(overlapStartFrame=10201, maxVid1=1438):
+def combineLankershimFiles(overlapStartFrame=10201, maxVid1=1438):
     file1 = 'trajectories-0830am-0845am.txt'
     file2  ='trajectories-0845am-0900am.txt'
     return futil.combineTrajFiles(dru.findPathForFile(file1), dru.findPathForFile(file2))
@@ -815,15 +815,15 @@ model_choices = {
 def main():
     if len(sys.argv) == 1:
         print("No arguments received, defaulting to...")
+    elif sys.argv[1] == "c": 
+        print("Combining trajectory files")
+        doStuffForPeachtree()
+        combineLankershimFiles()
     elif sys.argv[1] == "a":
         print("Augmenting raw trajectoris")
         for filename in sys.argv[2:]:
             print("Augmenting file:", filename)
             du.augOrigData(dru.findPathForFile(filename))
-    elif sys.argv[1] == "c": 
-        print("Combining trajectory files")
-        doStuffForPeachtree()
-        combineThose2files()
     elif sys.argv[1] == "f":
         print("Featurizing augmented data")
         if len(sys.argv) > 3:

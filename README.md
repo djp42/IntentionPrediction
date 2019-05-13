@@ -1,3 +1,7 @@
+| Testing | Coverage |
+| :-----: | :------: | 
+| [![Build Status](https://travis-ci.org/djp42/IntentionPrediction.svg?branch=master)](https://travis-ci.org/djp42/IntentionPrediction) | [![Coverage Status](https://coveralls.io/repos/github/djp42/IntentionPrediction/badge.svg?branch=master)](https://coveralls.io/github/djp42/IntentionPrediction?branch=master) |
+
 # IntentionPrediction
 This repo is used to predict the intentions of human drivers as the approach intersections. 
 It is the product of numerous smaller projects, and as such may not be the most interpretable. 
@@ -30,43 +34,57 @@ This repository is not self sufficient because the raw data files are not includ
 
 Additionally, there is a lot of redundant and unused code from the 229 project, since I began by cloning that and have not gone through and removed it yet. 
 
-## Pipeline
+## Install
+There actually aren't that many dependencies for the python portion. Julia is not currently supported since it used julia 0.6, so until I fix that the bayes-net will not work. 
+- Python3.5
+- `pip install -U -r requirements.txt`
+- `pip install -U -r requirements_test.txt`
+
+## Setup
+1. Download data.
+    - TODO: `wget data from releases.`
+2. (optional) Process data.
+    - `python program.py c`
+    - `python program.py a trajectories-lankershim.txt`
+    - `python program.py a trajectories-peachtree.txt`
+    - Optional because you can use the included augmented data that is already processed.
+    - There are 3 stages of the data:
+        1. *raw* - the raw trajectories from the original NGSIM format: `trajectories-[start]-[end].txt`.
+        2. *combined* - we combine the raw trajectories of subsequent time periods to create a single set of data: `trajectories-[roadname].txt`
+        3. *augmented* - Adding information such as velocity, acceleration, to the data: `AUGv2_trajectories-[roadname].txt`
+    - These steps just take a few minutes.
+3. Create feature-ized data.
+    - `python program.py f i`
+        - Will be prompted to choose feature sets.
+        - These are the "000", "001", etc., which indicate which additional features to use.
+    - option `s` is basically deprecated. option `i` means we save features by intersection, which is more efficient and useful.
+    - This can take a while for the robust feature sets including neighbors and history, up to over a half hour for test features 111.
+
+## Execution
 The file "program.py" is where nearly everything is executed from. 
 I will admit to have made this file before discovering the beauty of python argparse, so apologies in advance that I did everything by hand...
 
-Once the data is downloaded and the associated constant in constants.py is changed (or you put it in res/Lankershim, res/Peachtree), these command "should" work to run basically what I ran. The data needed is just the raw trajectory files for NGSIM Lankershim and Peachtree
-      
-`$ python program.py c`  
+After the setup from the previous section, we can produce results.
 
-    * to combine the two datasets, if not already (included in data.zip are already combined)
+* Train models and produce results. 
+    - `program.py t [models] [test_nums] [test_intersections]`
+        - additional arguments specified in program.py. This trains and tests the specified models. 
+    - As you may expect, this can take a long time for the neural nets. It took me around 6 hours.
 
-`$ python program.py a`
+* Evaluate the results from previous step.
+    - `program.py e [models] [test_nums] [test_intersections] [optional flags]`
+        - additional arguments specified in program.py. 
 
-    * to augment the raw trajectory files
+* Train and test the discrete bayesnet
+    - `julia BayesNet.jl`       
+    - uses the same features created, but trains and tests the discrete bayesian network
 
-`$ python program.py f`  
- 
-    * creates the features that will be used as Train/Test data
-
-`$ python program.py t  [...] `
- 
-    * additional arguments specified in program.py. This trains and tests the specified models. 
-
-`$ julia BayesNet.jl`       
- 
-    * uses the same features created, but trains and tests the discrete bayesian network
-
-`$ python program.py e [...]` 
-
-    * to evaluate the outputs
-
-`$ python analysis.py`  
-
-    * to analyze the models
-
-`$ julia analysis.jl`   
-
-    * to analyze the BayesNet
+* Analyze
+    - `python analysis.py`  
+        - to analyze the models.
+        - Currently unsupported on all cases
+    - `julia analysis.jl`   
+       - to analyze the BayesNet
 
 
 ## Files
@@ -80,47 +98,34 @@ validation.py: At one point did small tests for LSTM and others, but now mainly 
 
 
 In lib:
+* constants: constants... (and some functions because bad style I know... srry)
+* data2_class: improved class for data structure, main purpose is a dictionary of frames and vehicle ids to data, and specific functions. the functions are part of the class because they are very specific and there is only one class instance at any time anyway
+* data_class: mostly deprecated, used for old stuff still, may be needed if remaking data from raw
+* data_util: various utilities for helping with data manipulation at all stages
+* driver_util: some more utilities that have a more specific purpose to this project
+* eval_util: various functions and methods to evaluate the results. No result generation except thebaseline
+* frame_utile: mostly deprecated at this point, don't even remember it.
+* goal_processing: goal-specific data processing
+* goal_util: goal-specific utilities
+* learn_util: mostly deprecated/from the 229 project not the research project
+* merger_methods: not applicable to research project - is methods to help identify and quantify mergingvehicles
+* signals_util: utilities in my attempt to use signals as features, not used in final
+* util.py: unmodified since class project, uninteresting
+* vehicleclass.py: specific functions for the vehicle class (like getLaneID)
 
-    * constants: constants... (and some functions because bad style I know... srry)
-  
-    * data2_class: improved class for data structure, main purpose is a dictionary of frames and vehicle ids to data, and specific functions. the functions are part of the class because they are very specific and there is only one class instance at any time anyway
-  
-    * data_class: mostly deprecated, used for old stuff still, may be needed if remaking data from raw
-  
-    * data_util: various utilities for helping with data manipulation at all stages
-  
-    * driver_util: some more utilities that have a more specific purpose to this project
-  
-    * eval_util: various functions and methods to evaluate the results. No result generation except the baseline
-  
-    * frame_utile: mostly deprecated at this point, don't even remember it.
-  
-    * goal_processing: goal-specific data processing
-  
-    * goal_util: goal-specific utilities
-  
-    * learn_util: mostly deprecated/from the 229 project not the research project
-  
-    * merger_methods: not applicable to research project - is methods to help identify and quantify merging vehicles
-  
-    * signals_util: utilities in my attempt to use signals as features, not used in final
-  
-    * util.py: unmodified since class project, uninteresting
-  
-    * vehicleclass.py: specific functions for the vehicle class (like getLaneID)
- 
- In bin:
- 
-    * almost entirely useless now, but setup still helps on start, and visualize can sometimes be usefule.
+In bin:
+* almost entirely useless now, but setup still helps on start, and visualize can sometimes be usefule.
  
 ## TODO
 (This is mostly for me, but also if you want to work on it!)
 
-    1. Go through and verify the setup process again. I am sure things have been deprecated and probably don't work as intended
-
-    2. Clean up files, removing what is unnecessary to the intention prediction. 
-
-    3. Clean up code. There is definitely a lot of redundant and messy code, that I should probably clean up at some point.
-
-    4. Extend with other useful things
+* Go through and verify the setup process again. I am sure things have been deprecated and probably don't work as intended
+* Add some unittests.
+* Use `argparse`
+* Clean up files, removing what is unnecessary to the intention prediction. 
+* Upgrade to newer version of `tensorflow`
+* Julia install instructions / 1.0 support for bayes-net
+* Check use of `DistInd` in `score_utils.py` for confusion matrix (it does not have a test num so it may be incorrect usage for test 0...?).
+* Clean up code. There is definitely a lot of redundant and messy code, that I should probably clean up at some point.
+* Extend with other useful things
 
