@@ -156,6 +156,7 @@ logs/*
 # data
 res/Lankershim/*
 res/Peachtree/*
+res/data.tar.gz
 
 # results
 results/*

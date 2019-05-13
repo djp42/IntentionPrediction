@@ -41,8 +41,10 @@ There actually aren't that many dependencies for the python portion. Julia is no
 - `pip install -U -r requirements_test.txt`
 
 ## Setup
-1. Download data.
-    - TODO: `wget data from releases.`
+1. Download data and set paths.
+    - `./build.sh`
+        - downloads data from `https://github.com/djp42/IntentionPrediction/releases/download/v0.1/data.tar.gz` and extracts to [res/](res/)
+        - sets `INTENTPRED_PATH` to the current directory if it has not been set before.
 2. (optional) Process data.
     - `python program.py c`
     - `python program.py a trajectories-lankershim.txt`
@@ -70,15 +72,12 @@ After the setup from the previous section, we can produce results.
     - `program.py t [models] [test_nums] [test_intersections]`
         - additional arguments specified in program.py. This trains and tests the specified models. 
     - As you may expect, this can take a long time for the neural nets. It took me around 6 hours.
-
 * Evaluate the results from previous step.
     - `program.py e [models] [test_nums] [test_intersections] [optional flags]`
         - additional arguments specified in program.py. 
-
 * Train and test the discrete bayesnet
     - `julia BayesNet.jl`       
     - uses the same features created, but trains and tests the discrete bayesian network
-
 * Analyze
     - `python analysis.py`  
         - to analyze the models.
