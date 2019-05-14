@@ -49,8 +49,8 @@ laneType = 30
 nextMove = 31
 Distance = 32
 
-#path101 = os.getcwd()+'/res/101_trajectories/'
-#path80 = os.getcwd()+'/res/80_trajectories/'
+#path101 = os.environ["INTENTPRED_PATH"]()+'/res/101_trajectories/'
+#path80 = os.environ["INTENTPRED_PATH"]()+'/res/80_trajectories/'
 #
 #file101_1 = 'aug_trajectories-0750am-0805am'
 #file101_2 = 'aug_trajectories-0805am-0820am'
@@ -67,8 +67,9 @@ Distance = 32
 
 
 PATH_TO_ROOT = None
-PATH_TO_RESOURCES = os.getcwd() + os.sep+'res'+os.sep
-PATH_TO_RESULTS = os.getcwd() + os.sep+'results'+os.sep
+PATH_TO_RESOURCES = os.path.join(os.environ["INTENTPRED_PATH"], "res")
+PATH_TO_RESULTS = os.path.join(os.environ["INTENTPRED_PATH"], "results")
+PATH_TO_SCORES = os.path.join(os.environ["INTENTPRED_PATH"], "scores")
 PATH_TO_EXECUTABLES = None
 PATH_TO_LIBRARIES = None
 EXECUTABLES = None

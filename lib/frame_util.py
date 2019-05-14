@@ -22,14 +22,12 @@ FRAME_TIME = 0.1
 # This has heuristics to speed up coding, also can only be done with these 
 # two files anyway...
 def combineTrajFiles(filepath1, filepath2, overlapStartFrame=10201, maxVid1=1438):
-    newFilename = 'trajectories-lankershim.txt'
-    filename1 = os.path.basename(filepath1)
-    outpath = filepath1[:-len(filename1)]+newFilename
-    infile2 = open(filepath2, 'r')
-    with open(outpath, 'w') as outFile:
-        with open(filepath1) as infile1:
+    newFilename = "trajectories-lankershim.txt"
+    outpath = os.path.join(os.path.dirname(filepath1), newFilename)
+    with open(outpath, "w") as outFile:
+        with open(filepath1, "r") as infile1:
             outFile.write(infile1.read())
-        with open(filepath2) as infile2:
+        with open(filepath2, "r") as infile2:
             for line in infile2:
                 arr = line.split()
                 newline = arr
@@ -39,21 +37,20 @@ def combineTrajFiles(filepath1, filepath2, overlapStartFrame=10201, maxVid1=1438
     return outpath 
 
 def combineTrajFilesNoOverlap(filepath1, filepath2, skipFront=500, skipEnd=1000):
-    newFilename = 'trajectories-peachtree.txt'
-    filename1 = os.path.basename(filepath1)
-    outpath = filepath1[:-len(filename1)]+newFilename
-    #infile2 = open(filepath2, 'r')
+    newFilename = "trajectories-peachtree.txt"
+    outpath = os.path.join(os.path.dirname(filepath1), newFilename)
     maxVid1 = 0
-    maxFid1 = max(int((line.split())[c.FrameID]) for line in open(filepath1))
+    with open(filepath1, "r") as in1:
+        maxFid1 = max([int((line.split())[c.FrameID]) for line in in1])
     with open(outpath, 'w') as outFile:
-        with open(filepath1) as infile1:
+        with open(filepath1, "r") as infile1:
             for line in infile1:
                 arr = line.split()
                 if int(arr[c.FrameID]) > maxFid1: break
                 outFile.write(line)
                 if int(arr[c.VehicleID]) > maxVid1:
                     maxVid1 = int(arr[c.VehicleID])
-        with open(filepath2) as infile2:
+        with open(filepath2, "r") as infile2:
             for line in infile2:
                 arr = line.split()
                 if int(arr[c.FrameID]) <= skipFront: continue

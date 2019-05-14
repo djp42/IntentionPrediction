@@ -56,9 +56,8 @@ There actually aren't that many dependencies for the python portion. Julia is no
         3. *augmented* - Adding information such as velocity, acceleration, to the data: `AUGv2_trajectories-[roadname].txt`
     - These steps just take a few minutes.
 3. Create feature-ized data.
-    - `python program.py f i`
-        - Will be prompted to choose feature sets.
-        - These are the "000", "001", etc., which indicate which additional features to use.
+    - `python program.py f i [test_nums]`
+        - `[test_nums]` are the "000", "001", etc., which indicate which features to use.
     - option `s` is basically deprecated. option `i` means we save features by intersection, which is more efficient and useful.
     - This can take a while for the robust feature sets including neighbors and history, up to over a half hour for test features 111.
 
@@ -118,8 +117,7 @@ In bin:
 ## TODO
 (This is mostly for me, but also if you want to work on it!)
 
-* Go through and verify the setup process again. I am sure things have been deprecated and probably don't work as intended
-* Add some unittests.
+* Add some unittests -- first pretty general, then after argparse and restructuring it can probably be a little better.
 * Use `argparse`
 * Clean up files, removing what is unnecessary to the intention prediction. 
 * `INTENTPRED_PATH`
@@ -127,5 +125,6 @@ In bin:
 * Julia install instructions / 1.0 support for bayes-net
 * Check use of `DistInd` in `score_utils.py` for confusion matrix (it does not have a test num so it may be incorrect usage for test 0...?).
 * Clean up code. There is definitely a lot of redundant and messy code, that I should probably clean up at some point.
+* Add comments
 * Extend with other useful things
 
