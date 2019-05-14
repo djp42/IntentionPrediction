@@ -507,14 +507,15 @@ def newCreateAllFeaturesAndTargets(testtypes, filename_lank="trajectories-lanker
     filepath1 = dru.findPathForFile(filename_lank)
     filepath2 = dru.findPathForFile(filename_peach)
     if byIntersection:
-        save_path = c.PATH_TO_RESULTS + "ByIntersection" + os.sep
+        save_path = os.path.join(c.PATH_TO_RESULTS, "ByIntersection")
     else:
-        save_path = c.PATH_TO_RESULTS + "General" + os.sep
+        save_path = os.path.join(c.PATH_TO_RESULTS, "General")
     check_make_paths([save_path])
     for testnum in testtypes:
-        check_make_paths([save_path+testnum+os.sep])
+        check_make_paths([os.path.join(save_path, testnum)])
         allFeatures_normal, allFeatures_LSTM = getAllPossibleFeatures(filepath1, filepath2,
-                               lanetype=bool(int(testnum[0])), history=bool(int(testnum[1])), histFs = [5,10,20,30], 
+                               lanetype=bool(int(testnum[0])), history=bool(int(testnum[1])), 
+                               histFs = [5,10,20,30], 
                                traffic = bool(int(testnum[2])), numFramesToFind=20)
         if not save: continue
         if not byIntersection:
@@ -523,10 +524,10 @@ def newCreateAllFeaturesAndTargets(testtypes, filename_lank="trajectories-lanker
             continue
         for intersectionID in allFeatures_LSTM.keys():
             #save features
-            check_make_paths([save_path+testnum+os.sep+str(intersectionID) + os.sep])
+            check_make_paths([os.path.join(save_path, testnum, str(intersectionID))])
             print(allFeatures_LSTM[intersectionID].shape)
-            np.savetxt(save_path + testnum, str(intersectionID), "featuresAndTargets", allFeatures_normal[intersectionID])
-            np.save(save_path + testnum, str(intersectionID), "LSTM_Formatted_featuresAndTargets", allFeatures_LSTM[intersectionID])
+            np.savetxt(os.path.join(save_path, testnum, str(intersectionID), "featuresAndTargets"), allFeatures_normal[intersectionID])
+            np.save(os.path.join(save_path, testnum, str(intersectionID), "LSTM_Formatted_featuresAndTargets"), allFeatures_LSTM[intersectionID])
     return allFeatures_normal, allFeatures_LSTM
     #make features with vehicle id and frame id, which can be queried later
     #no longer using lane type feature, except must include for conditional baseline

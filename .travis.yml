@@ -13,7 +13,7 @@ before_script:
 script:
   - ./build.sh
   - source ${HOME}/.bashrc
-  - pytest --cov-config=.coveragerc --cov=.
+  - travis_wait 50 pytest --cov-config=.coveragerc --cov=.
 
 after_success:
   - coveralls
