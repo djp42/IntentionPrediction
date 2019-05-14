@@ -1,10 +1,11 @@
 using BayesNets
 using Discretizers
-using JLD
+using JLD2
+using DelimitedFiles
 
 basepath = "./results/ByIntersection/"
 doingPeach = false 
-testnums = ["111","011"]#"000","001","010","011", "100"]
+testnums = ["000"]#"000","001","010","011", "100"]
 intersections = collect(1:9)
 test_intersections = collect(1:9)
 doSubtest = false #2500 features only
@@ -166,11 +167,14 @@ end
 
 # fit function --- modified from https://github.com/sisl/BayesNets.jl/blob/master/src/DiscreteBayesNet/greedy_hill_climbing.jl
 function Distributions.fit(::Type{DiscreteBayesNet}, data::DataFrame, params::GreedyHillClimbing, indexOfOut::Int;
-    ncategories::Vector{Int} = map!(i->infer_number_of_instantiations(data[i]), Array(Int, ncol(data)), 1:ncol(data)),
+    ncategories::Vector{Int} = map!(
+      i->infer_number_of_instantiations(data[i]), 
+      Array{Int}(undef, ncol(data)), 
+      1:ncol(data)),
     )
 
     n = ncol(data)
-    parent_list = map!(i->Int[], Array(Vector{Int}, n), 1:n)
+    parent_list = map!(i->Int[], Array{Vector{Int}}(undef, n), 1:n)
     datamat = convert(Matrix{Int}, data)'
     score_components = bayesian_score_components(parent_list, ncategories, datamat, params.prior, params.cache)
 
@@ -232,7 +236,7 @@ function Distributions.fit(::Type{DiscreteBayesNet}, data::DataFrame, params::Gr
       #end   #this is for the "for i in 1:n"
     end
     # construct the BayesNet
-    cpds = Array(DiscreteCPD, n)
+    cpds = Array{DiscreteCPD}(undef, n)
     varnames = names(data)
     for j in 1:n
         name = varnames[j]
@@ -312,9 +316,12 @@ for inter in test_intersections
 
       params = GreedyHillClimbing(ScoreComponentCache(traindata), max_n_parents=max_parents, prior=UniformPrior())
       println("Done fitting params, starting to fit BN")
-      
-      num_bins_all = map!(i->infer_number_of_instantiations(alldata[i]), Array(Int, ncol(alldata)), 1:ncol(alldata))
-      bnDis = @time fit(DiscreteBayesNet, traindata, params, moveIndex; ncategories=num_bins_all)
+      num_bins_all = map!(
+        i->infer_number_of_instantiations(alldata[i]), 
+        Array{Int64}(undef, ncol(alldata)), 
+        1:ncol(alldata)
+        )
+      bnDis = fit(DiscreteBayesNet, traindata, params, moveIndex, ncategories=num_bins_all)
       println("Done fitting BN for CV #: $i")
       save(string("$basepath$i","/BN_model.jld"), "bnDis", bnDis)
       score = 0
