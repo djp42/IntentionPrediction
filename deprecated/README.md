@@ -1,0 +1,1 @@
+As I went through spring cleaning, I discovered a few files that I couldn't quite remember how they worked. I deleted the files I knew were not useful to the task, but if I wasn't sure about them I moved them here.

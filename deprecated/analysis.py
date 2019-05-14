@@ -106,21 +106,20 @@ def analyze_model(test_inters, testtype, model):
         #try:
         #    Ypred = classifier.predict_proba(Xtest)
         #except:
-        if True: #too lazy to unindent cause vim not working lol
-            print("Could not load saved model, re-training :(.")
-            Ytrain = [int(i-1) for i in Ytrain]
-            start = time.clock()
-            max_epochs = 10
-            if max_epochs:
-                start2 = time.clock()
-                for epoch in range(max_epochs):
-                    classifier.fit(Xtrain, Ytrain, steps=1000)
-                    end2 = time.clock()
-                    print("Epoch",epoch,"Done. Took:", end2-start2)
-                    start2 = end2
-            else:
-                classifier.fit(Xtrain, Ytrain)#, logdir=log_path)
-            Ypred = classifier.predict_proba(Xtest)
+        print("Could not load saved model, re-training :(.")
+        Ytrain = [int(i-1) for i in Ytrain]
+        start = time.clock()
+        max_epochs = 10
+        if max_epochs:
+            start2 = time.clock()
+            for epoch in range(max_epochs):
+                classifier.fit(Xtrain, Ytrain, steps=1000)
+                end2 = time.clock()
+                print("Epoch",epoch,"Done. Took:", end2-start2)
+                start2 = end2
+        else:
+            classifier.fit(Xtrain, Ytrain)#, logdir=log_path)
+        Ypred = classifier.predict_proba(Xtest)
         end = time.clock()
         timeFit = end - start
     print("Done fitting, time spent:", timeFit)
@@ -137,7 +136,7 @@ def doTheThings(models=["LSTM_128x2","LSTM_128x3","LSTM_256x2"]):
                 analyze_model([intersection],testtype,model)
 
 features_test = {
-        "000":9,"001":65,"010":45,"011":101,"100":13
+        "000":9,"001":65,"010":45,"011":101,"100":13,"111":103
         }
 
 def doAnalysisThings(models, testtypes, testinters, opts):
@@ -173,6 +172,14 @@ def doAnalysisThings(models, testtypes, testinters, opts):
                     print(model, " & ", " & ".join([str(i)[:6] for i in impact_per_feature]))
 
 
-#doTheThings(["DNN"])
-#doTheThings()
-doAnalysisThings(["DNN","LSTM_128x2","LSTM_128x3","LSTM_256x2"], ["000","100"],[3,7],None)#"001","010","011","100"], [3,7], None)
+
+models = ["DNN","LSTM_128x2","LSTM_128x3","LSTM_256x2"]
+testtypes = ["000","100"]
+testintersections = [3,7]
+options = None
+
+
+models = ["LSTM_128x2"]
+testtypes = ["111"]
+testintersections = [1]
+doAnalysisThings(models, testtypes, testintersections, options)
