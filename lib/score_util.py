@@ -165,7 +165,8 @@ def loadPrintScoreWrapper(folderpath, testInters = [1],
     print(features.shape)
     predictions = {}
     for i in testInters:
-        predictions[i] = np.loadtxt(folderpath + "TestOn" + str(i) + os.sep + "Ypred_" + model_type)
+        predictions[i] = np.loadtxt(
+            os.path.join(folderpath, "TestOn" + str(i), "Ypred_" + model_type))
         #if i == "1" and model_type == "SVM":  #need to swap 1 and 2 classes for only this one, due to order they appeared in the data I would guess, although not really sure why but clearly necessary.
         #    for j in range(len(predictions[i])):
         #        predictions[i][j,1], predictions[i][j,0] = predictions[i][j,0], predictions[i][j,1]
@@ -242,22 +243,24 @@ def getActsPredsFeats(folderpath, model_type, fwd_bkwd=None,
     if opt_load_predictions and "LSTM" in model_type:
         act_feat_path = opt_load_predictions
     if fwd_bkwd and not "LSTM" in model_type:
-        actuals = np.concatenate([np.loadtxt(act_feat_path + str(i) + os.sep + files.targetString) for i in range(5)])
+        actuals = np.concatenate([np.loadtxt(
+                os.path.join(act_feat_path, str(i), files.targetString)
+            ) for i in range(5)])
     if model_type in ["SVM", "DNN", "Marginal", "Conditional"]:
-        predfile = folderpath + model_type + os.sep + strFwdBkwd + "YPred_" + model_type
+        predfile = os.path.join(folderpath, model_type, strFwdBkwd + "YPred_" + model_type)
         if opt_load_predictions:
-            predfile = opt_load_predictions + model_type + os.sep + strFwdBkwd + "YPred_" + model_type
+            predfile = os.path.join(opt_load_predictions, model_type, strFwdBkwd + "YPred_" + model_type)
     elif model_type == "BN":
         predfile = folderpath + strFwdBkwd + files.BNPreds
         if opt_load_predictions:
-            predfile = opt_load_predictions + strFwdBkwd + files.BNPreds
+            predfile = os.path.join(opt_load_predictions, strFwdBkwd + files.BNPreds)
     elif "LSTM" in model_type:
-        predfile = folderpath + model_type + os.sep + strFwdBkwd + "YPred_" + model_type
+        predfile = os.path.join(folderpath, model_type, strFwdBkwd + "YPred_" + model_type)
         #results/Test4/LSTM_formatted/LSTM_128x2/bkwd/Ypred_LSTM_128x2
         if opt_load_predictions:
-            predfile = opt_load_predictions + model_type + os.sep + strFwdBkwd + "YPred_" + model_type
+            predfile = os.path.join(opt_load_predictions, model_type, strFwdBkwd + "YPred_" + model_type)
             
-        actfile = act_feat_path + model_type + os.sep + strFwdBkwd + files.LSTMActuals
+        actfile = os.path.join(act_feat_path, model_type, strFwdBkwd + files.LSTMActuals)
         #results/Test4/LSTM_formatted/LSTM_128x2/bkwd/usedY.npy
     else:
         print("Invalid model type of:", model_type)
@@ -292,13 +295,16 @@ def getFeatures(folderpath, model_type, fwd_bkwd=None):
     if fwd_bkwd:
         strFwdBkwd = fwd_bkwd
     if fwd_bkwd and not "LSTM" in model_type:
-        features = np.concatenate([np.loadtxt(folderpath + str(i) + os.sep + files.featureString) for i in range(5)])
+        features = np.concatenate([np.loadtxt(
+                os.path.join(folderpath, str(i), files.featureString)
+            ) for i in range(5)])
     elif "LSTM" in model_type:
-        features = np.load(folderpath + model_type + os.sep + strFwdBkwd + files.LSTMFeatures)
-        print("features from:", str(folderpath + model_type + os.sep + strFwdBkwd + files.LSTMFeatures))
+        fpath = os.path.join(folderpath, model_type, strFwdBkwd + files.LSTMFeatures)
+        features = np.load(fpath)
+        print("features from:", fpath)
         #features = np.reshape(features, (features.shape[0]*features.shape[1], features.shape[2]))
     else: #not fwd bkwd, just getting one featureset?
-        features = np.loadtxt(folderpath + files.featureString)
+        features = np.loadtxt(os.path.join(folderpath, files.featureString))
     return features
 
 #deprecated

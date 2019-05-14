@@ -19,15 +19,17 @@ import os
 def getFeaturesLSTM(load_folder, testnum, intersections, q=False): #loadf is results/ByIntersection/testnum/
     LSTM_these = {}
     for intersection in intersections:
-        LSTM_these[intersection] = np.load(load_folder + str(intersection) + os.sep + "LSTM_Formatted_featuresAndTargets.npy")
+        LSTM_these[intersection] = np.load(
+            os.path.join(load_folder, str(intersection), "LSTM_Formatted_featuresAndTargets.npy")
+        )
         if not q: print("LSTM features loaded from inter", intersection)
     return convertToFeatures_lstm(LSTM_these, testnum, q)
 
 def getFeaturesnonLSTM(load_folder, testnum, intersections, all=True, q=False):
     norm_test = {}
     for intersection in intersections:
-        filename=load_folder + str(intersection) + os.sep + "featuresAndTargets"
-        norm_test[intersection] = np.loadtxt(filename)
+        filepath = os.path.join(load_folder, str(intersection), "featuresAndTargets")
+        norm_test[intersection] = np.loadtxt(filepath)
         if not q: print("NonLSTM features loaded from inter", intersection)
     return convertToFeatures_normal(norm_test, testnum, all, q)
 

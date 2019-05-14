@@ -107,8 +107,8 @@ def load_fids(load_folder):
             if len(sub_folder) > 1:
                 continue
             i = int(sub_folder)
-            fullpath = load_folder + sub_folder + '/'
-            secFids[i] = np.loadtxt(fullpath + "Fids")
+            fullpath = os.path.join(load_folder, sub_folder, "Fids")
+            secFids[i] = np.loadtxt(fullpath)
             allFids.extend(secFids[i])
     return secFids, allFids
 
@@ -313,7 +313,7 @@ def trainTestDNN(Xtrain, Ytrain, Xtest, Ytest, testnum, save_path=None, max_epoc
             feature_columns = tf.contrib.learn.infer_real_valued_columns_from_input(Xtrain),
             hidden_units=[128, 128], n_classes=nclasses, model_dir=modeldir)
     else:
-        modeldir = "tmp_DNN_"+ testnum, str(len(Xtest))
+        modeldir = "tmp_DNN_" + testnum, str(len(Xtest))
         check_make_paths([modeldir])
         classifier = skflow.DNNClassifier(
             feature_columns = tf.contrib.learn.infer_real_valued_columns_from_input(Xtrain),
@@ -605,7 +605,7 @@ def new_train_and_test(models, testtypes, split_inters, saving, graphs, exper=Fa
     print(test_inters)
     for testnum in testtypes:
         load_folder = os.path.join(path_to_load, testnum)
-        save_folder = os.path.join(load_folder, "TestOn", ",".join([str(i) for i in test_inters]))
+        save_folder = os.path.join(load_folder, "TestOn" + ",".join([str(i) for i in test_inters]))
         check_make_paths([save_folder])
         if hasLSTM:
             featuresLSTM, targetsLSTM = du.getFeaturesLSTM(load_folder, testnum, train_inters)
@@ -639,7 +639,7 @@ def new_train_and_test(models, testtypes, split_inters, saving, graphs, exper=Fa
                 testFeatureSelection(model, Xtrain, Ytrain, Xtest, Ytest, testnum)
                 continue
             Ypred, timeFit, timePred, all_tests_x, all_tests_y = testFeatureSelection(model, Xtrain, Ytrain, Xtest, Ytest, testnum, save_folder, test_inters, skip=True)
-            np.savetxt(save_folder + "Ypred_" + model, np.array(Ypred))
+            np.savetxt(os.path.join(save_folder, "Ypred_" + model), np.array(Ypred))
             print(model, "predictions saved, test", testnum)
 
 
