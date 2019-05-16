@@ -5,7 +5,7 @@ Created on Wed May 18 12:48:22 2016
 @author: Derek
 """
 import numpy as np
-from lib import learn_util as lu
+from utils import learn_util as lu
 
 def unique(a):
     b = np.diff(a)

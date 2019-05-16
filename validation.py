@@ -8,14 +8,14 @@ Validation script
 
 
 import numpy as np
-from lib import constants as c
-from lib import data2_class as dd2
-from lib import data_util as du
-from lib import vehicleclass as v
-from lib import frame_util as futil
-from lib import driver_util as dru
-from lib import eval_util as eutil
-from lib import LSTM
+from utils import constants as c
+from utils import data2_class as dd2
+from utils import data_util as du
+from utils import vehicleclass as v
+from utils import frame_util as futil
+from utils import driver_util as dru
+from utils import eval_util as eutil
+from utils import LSTM
 from sklearn.externals import joblib
 from sklearn import svm
 from sklearn import linear_model

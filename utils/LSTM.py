@@ -18,7 +18,7 @@ import math
 import numpy as np
 import random
 from collections import Counter
-from lib import score_util as sutil
+from utils import score_util as sutil
 
 #from tensorflow.models.rnn.ptb import reader
 

@@ -11,11 +11,11 @@ import numpy as np
 import os, sys, time, importlib
 import tokenize, re, string
 import json, unicodedata
-from lib import constants as c
+from utils import constants as c
 #import matplotlib.pyplot as plt
 #from IPython import display
-from lib import vehicleclass as v
-from lib import data_class as dd
+from utils import vehicleclass as v
+from utils import data_class as dd
 
 FRAME_TIME = 0.1
 

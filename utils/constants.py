@@ -3,7 +3,7 @@ import numpy, scipy, math, random
 import os, sys, time, importlib
 import tokenize, re, string
 import json, unicodedata
-from lib import learn_util as lu
+from utils import learn_util as lu
 
 #frames are 0.1 seconds
 t_frame = 0.1

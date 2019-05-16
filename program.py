@@ -17,17 +17,17 @@ from collections import defaultdict
 #import matplotlib.pyplot as plt
 #import seaborn as sns
 #from IPython import display
-from lib import constants as c
-from lib import data2_class as dd2
-from lib import data_util as du
-from lib import vehicleclass as v
-from lib import frame_util as futil
-from lib import driver_util as dru
-from lib import score_util as sutil
-#from lib import eval_util as eutil
-#from lib import goal_processing as goals
-#from lib import signals_util as su
-from lib import LSTM
+from utils import constants as c
+from utils import data2_class as dd2
+from utils import data_util as du
+from utils import vehicleclass as v
+from utils import frame_util as futil
+from utils import driver_util as dru
+from utils import score_util as sutil
+#from utils import eval_util as eutil
+#from utils import goal_processing as goals
+#from utils import signals_util as su
+from utils import LSTM
 from sklearn.externals import joblib
 from sklearn import svm
 from sklearn.naive_bayes import GaussianNB

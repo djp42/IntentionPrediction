@@ -5,9 +5,9 @@ Created on Fri Jun 24 14:02:14 2016
 @author: LordPhillips
 """
 
-from lib import constants as c
-from lib import frame_util as futil
-from lib import vehicleclass as v
+from utils import constants as c
+from utils import frame_util as futil
+from utils import vehicleclass as v
 import numpy as np
 import os
 import math

@@ -2,7 +2,7 @@ import os
 import sys
 sys.path.append(os.environ["INTENTPRED_PATH"])
 
-from lib import constants
+from utils import constants
 
 import unittest
 

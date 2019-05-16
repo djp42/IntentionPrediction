@@ -8,11 +8,11 @@ traffic signal utilities
 
 """
 
-from lib import vehicleclass as v
-from lib import driver_util as dru
-from lib import constants as c
-from lib import data2_class as dd2
-from lib import frame_util as fut
+from utils import vehicleclass as v
+from utils import driver_util as dru
+from utils import constants as c
+from utils import data2_class as dd2
+from utils import frame_util as fut
 import matplotlib.pyplot as plt
 import datetime
 

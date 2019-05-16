@@ -7,9 +7,9 @@ trajectory files with all features needed in a coherent fashion
 @author: LordPhillips
 """
 
-from lib import constants as c
-from lib import frame_util as futil #for arrtostring
-from lib import vehicleclass as v
+from utils import constants as c
+from utils import frame_util as futil #for arrtostring
+from utils import vehicleclass as v
 from collections import defaultdict
 from collections import Counter
 import numpy as np

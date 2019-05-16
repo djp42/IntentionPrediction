@@ -35,7 +35,7 @@ Created on Sun Dec 11 16:51:10 2016
             and  I hypothesize velocity will be the most sensitive, with headway mostly ignored.
 '''
 
-from lib import LSTM
+from utils import LSTM
 from sklearn.externals import joblib
 from sklearn import svm
 from sklearn import linear_model
@@ -46,8 +46,8 @@ from sklearn.feature_selection import chi2
 import tensorflow as tf
 import tensorflow.contrib.learn as skflow
 
-from lib import constants as c
-from lib import data_util as du
+from utils import constants as c
+from utils import data_util as du
 
 import os
 import time

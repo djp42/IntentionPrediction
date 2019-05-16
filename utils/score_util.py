@@ -7,8 +7,8 @@ utilities to help with evaluating the SVM
 """
 
 from sklearn import metrics
-from lib import constants as c
-from lib import data_util as du
+from utils import constants as c
+from utils import data_util as du
 import numpy as np
 import os
 import math

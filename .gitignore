@@ -13,8 +13,6 @@ calibrations/*
 *.png
 *.pyc
 
-gps_logging.txt
-
 tests/plots
 __pycache__/*
 *__pycache__*

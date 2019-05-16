@@ -117,8 +117,9 @@ In bin:
 ## TODO
 (This is mostly for me, but also if you want to work on it!)
 
-* Add some unittests -- first pretty general, then after argparse and restructuring it can probably be a little better.
 * Use `argparse`
+* Add some unittests
+* Better object oriented programming throughout.
 * Clean up files, removing what is unnecessary to the intention prediction. 
 * `INTENTPRED_PATH`
 * Upgrade to newer version of `tensorflow`

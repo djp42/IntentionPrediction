@@ -5,11 +5,11 @@ Created on Thu Jul  7 14:22:06 2016
 @author: LordPhillips
 """
 
-from lib import constants as c
-from lib import frame_util as futil
-from lib import vehicleclass as v
-from lib import data_util as dd
-from lib import driver_util as dutil
+from utils import constants as c
+from utils import frame_util as futil
+from utils import vehicleclass as v
+from utils import data_util as dd
+from utils import driver_util as dutil
 import numpy as np
 import re
 import matplotlib.pyplot as plt

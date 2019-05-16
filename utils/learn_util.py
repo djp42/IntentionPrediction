@@ -5,12 +5,12 @@ Created on Mon May 23 18:11:36 2016
 @author: Derek
 """
 
-from lib import frame_util as futil
+from utils import frame_util as futil
 import numpy as np
 import os
 from scipy import sparse
-from lib import constants
-from lib import vehicleclass as v
+from utils import constants
+from utils import vehicleclass as v
 import time
 import random
 

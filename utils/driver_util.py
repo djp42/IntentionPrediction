@@ -6,9 +6,9 @@ Created on Mon Aug  1 10:27:58 2016
 """
 import os
 import datetime
-from lib import constants as c
-from lib import vehicleclass as v
-from lib import frame_util as futil
+from utils import constants as c
+from utils import vehicleclass as v
+from utils import frame_util as futil
 
 '''The ngsim datetime is wrong. this converts.
 example input:      1118936700200

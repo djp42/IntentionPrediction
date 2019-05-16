@@ -7,10 +7,10 @@ after data_util was made and has function designed for the machine learning
 @author: LordPhillips
 """
 
-from lib import constants as c
-from lib import frame_util as futil
-from lib import data_util as dutil
-from lib import vehicleclass as v
+from utils import constants as c
+from utils import frame_util as futil
+from utils import data_util as dutil
+from utils import vehicleclass as v
 import numpy as np
 import os
 import math

@@ -6,7 +6,7 @@ import unittest
 import subprocess
 
 import program
-from lib import constants
+from utils import constants
 
 class TestNoErrorsFullSystem(unittest.TestCase):
     # TODO: make a more variable path system so that I 

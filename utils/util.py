@@ -10,7 +10,7 @@ import os, sys, time, importlib
 import tokenize, re, string
 import json, unicodedata
 #import lib.constants as c
-from lib import constants as c
+from utils import constants as c
 
 ##
 # Function: loadJSONDict

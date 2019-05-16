@@ -3,11 +3,11 @@ import matplotlib.pyplot as plt
 import time
 import pylab as pl
 import importlib
-from lib import util
+from utils import util
 import learn_util
 from copy import deepcopy
 import os
-from lib import frame_util as futil
+from utils import frame_util as futil
 import shutil
 
 ##Example usage at bottom.
