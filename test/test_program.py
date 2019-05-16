@@ -6,7 +6,8 @@ import unittest
 import subprocess
 
 import program
-from utils import constants
+from utils import constants, argument_utils
+
 
 class TestNoErrorsFullSystem(unittest.TestCase):
     # TODO: make a more variable path system so that I 
@@ -16,16 +17,23 @@ class TestNoErrorsFullSystem(unittest.TestCase):
     def test_program_full_stack(self):
         # testing combine and augment together because order matters. 
         # augment depends on combine.
-        peachtree, lankershim = program.main(["testing", "c"])
+        peachtree, lankershim = program.main(
+            argument_utils.parse_args(False, ["c"])
+        )
         os.remove(peachtree)
         os.remove(lankershim)
-        peachtree, lankershim = program.main(["testing", "c"])
+        peachtree, lankershim = program.main(
+            argument_utils.parse_args(False, ["c"])
+        )
         self.assertTrue(os.path.exists(peachtree))
         self.assertTrue(os.path.exists(lankershim))
         
         # done with combine
 
-        program.main(["testing", "a", "trajectories-peachtree.txt", "trajectories-lankershim.txt"])
+        program.main(argument_utils.parse_args(
+            False, 
+            ["a", "--filenames", "trajectories-peachtree.txt", "trajectories-lankershim.txt"]
+        ))
         self.assertTrue(os.path.exists(
             os.path.join(constants.PATH_TO_RESOURCES, "Peachtree", "AUGv2_trajectories-peachtree.txt")
         ))
@@ -35,7 +43,10 @@ class TestNoErrorsFullSystem(unittest.TestCase):
         
         # done with augment
         
-        program.main(["testing", "f", "i", "000"])
+        program.main(argument_utils.parse_args(
+            False, 
+            ["f", "--featurize_type", "i", "--test_nums", "000"]
+        ))
         for intersection in range(1,10):
             path_to_features_for_intersection = os.path.join(
                 constants.PATH_TO_RESULTS, "ByIntersection", "000", str(intersection))
@@ -49,11 +60,17 @@ class TestNoErrorsFullSystem(unittest.TestCase):
         
         # done with featureizing
 
-        program.main(["testing", "t", "test", "000", "1"])
+        program.main(argument_utils.parse_args(
+            False, 
+            ["t", "--models", "test", "--test_nums", "000", "--test_intersections", "1"]
+        ))
 
         # done training some models
 
-        program.main(["testing", "e", "test", "000", "1"])
+        program.main(argument_utils.parse_args(
+            False, 
+            ["e", "--models", "test", "--test_nums", "000", "--test_intersections", "1"]
+        ))
 
         # done with some evaluation
 

@@ -24,6 +24,7 @@ from utils import vehicleclass as v
 from utils import frame_util as futil
 from utils import driver_util as dru
 from utils import score_util as sutil
+from utils import argument_utils
 #from utils import eval_util as eutil
 #from utils import goal_processing as goals
 #from utils import signals_util as su
@@ -733,184 +734,131 @@ def printScores(scores):
         for model in sorted(list(scores[testnum].keys())):
             print(model, scores[testnum][model])
             
-def doEvalThings(models, testtypes, teston, opts):
+def doEvalThings(models, testtypes, teston, arguments):
     all_scores = {}
     for testinter in teston.split(","):
         this_inters = ",".join(testinter)
-        all_scores[testinter] = evaluate(models, testtypes, this_inters, "d" in opts, "q" in opts, "l" in opts)
+        all_scores[testinter] = evaluate(
+            models, testtypes, this_inters, 
+            arguments.make_distance_histograms,
+            arguments.quiet_eval,
+            arguments.load_scores)
     print("".join(["-"]*80))
     print("".join(["-"]*80))
     for testinter in sorted(list(all_scores.keys())):
         print("".join(["="]*40))
-        if not "d" in opts:
+        if not arguments.make_distance_histograms:
             print("score for testinter:", testinter)
             printScores(all_scores[testinter])
-        if "s" in opts and "l" not in opts:
+        if arguments.save_scores and not arguments.load_scores:
             saveScores(all_scores[testinter],
                 save_folder = os.path.join(c.PATH_TO_SCORES, str(testinter)), 
-                dist_hist = "d" in opts)
-        if "l" in opts and "s" in opts:
+                dist_hist = arguments.make_distance_histograms)
+        if (arguments.load_scores and arguments.save_scores) or arguments.excel:
             saveAllScoresExcel(all_scores, 
                 save_folder = os.path.join(c.PATH_TO_SCORES, str(testinter)), 
-                dist_hist = "d" in opts)
+                dist_hist = arguments.make_distance_histograms)
 
-
-nonLSTMs = ["SVM", "BN", "nb", "DNN"]
-LSTMs = ["LSTM_128x2", "LSTM_128x3", "LSTM_256x2"]
-baselines = ["Marginal", "nb"] 
-#nb is naive bayes
-model_choices = {
-    "all": ["Marginal", "SVM", "BN", "nb", "DNN", "LSTM_128x2", "LSTM_128x3", "LSTM_256x2"],
-    "bases": baselines,
-    "nb": ["nb"],
-    "lstms": LSTMs,
-    "svm": ["SVM"],
-    "bn": ["BN"],
-    "svmbn": ["SVM", "BN"],
-    "dnn": ["DNN"],
-    "nlstms": nonLSTMs,
-    "nns": ["DNN", "LSTM_128x2", "LSTM_128x3", "LSTM_256x2"],
-    "nn": ["DNN", "LSTM_128x2", "LSTM_128x3", "LSTM_256x2"],
-    "lstm1": ["LSTM_128x2"],
-    "lstm2": ["LSTM_128x3"],
-    "lstm3": ["LSTM_256x2"],
-    "lstmtest": ["LSTM_test1"],
-    "nsvmbn": ["Marginal", "nb", "DNN", "LSTM_128x2", "LSTM_128x3", "LSTM_256x2"],
-    "nsvm": ["Marginal", "BN", "nb", "DNN", "LSTM_128x2", "LSTM_128x3", "LSTM_256x2"],
-    "nbasesbn": ["SVM", "DNN", "LSTM_128x2", "LSTM_128x3", "LSTM_256x2"],
-    "nbasessvm": ["BN", "DNN", "LSTM_128x2", "LSTM_128x3", "LSTM_256x2"],
-    "nbases": ["SVM", "BN", "DNN", "LSTM_128x2", "LSTM_128x3", "LSTM_256x2"],
-    "dnnlstm1": ["DNN", "LSTM_128x2"],
-    "notnns": ["Marginal", "SVM", "BN", "nb"],
-    "test": ["Marginal", "LSTM_128x2"],
-}
 
 '''To incorporate command line arguments
     arg1 = augment, featurize, train, test, or train and test, or evaluate saved predictions
     arg2, ... are options specific to arg1
 '''
 def main(arguments):
-    if len(arguments) == 1:
-        print("No arguments received, defaulting to...")
-    elif arguments[1] == "c": 
+    print(arguments)
+    mode = argument_utils.expand_mode(arguments.mode)
+    if mode == "combine": 
         print("Combining trajectory files")
         peachtree = doStuffForPeachtree()
         lankershim = combineLankershimFiles()
         return peachtree, lankershim
-    elif arguments[1] == "a":
+
+    elif mode == "augment":
         print("Augmenting raw trajectoris")
-        for filename in arguments[2:]:
+        for filename in arguments.filenames:
             print("Augmenting file:", filename)
             du.augOrigData(dru.findPathForFile(filename))
-    elif arguments[1] == "f":
+
+    elif mode == "featurize":
         print("Featurizing augmented data")
         filename_lank = "AUGv2_trajectories-lankershim.txt"
         filename_peach = "AUGv2_trajectories-peachtree.txt"
-        if len(arguments) <= 3:
-            testtypes = ["000","100","001","010","011"]
-        else:
-            testtypes = arguments[3].split(",")
+        testtypes = arguments.test_nums.split(",")
 
         print("Test types to featurize for:", testtypes)
-        if arguments[2] == "s":
+        if arguments.featurize_type == "s":
             print("saving featurzied general data")
             newCreateAllFeaturesAndTargets(testtypes,filename_lank, filename_peach, save=True, byIntersection=False)
-        elif arguments[2] == "i":
+        elif arguments.featurize_type == "i":
             print("saving feautrized data by intersection")
             newCreateAllFeaturesAndTargets(testtypes,filename_lank, filename_peach, save=True)
-        elif arguments[2] == "n":
+        elif arguments.featurize_type == "n":
             print("not saving")
             newCreateAllFeaturesAndTargets(testtypes,filename_lank, filename_peach, save=False)
         else:
-            print("invalid featurization option,", arguments[2], "options are s (save general), i (save by intersection), n (dont save - not recommended)")
+            print("invalid featurization option,", arguments.featurize_type, "options are s (save general), i (save by intersection), n (dont save - not recommended)")
         print("Done featurizing")
-    elif "t" in arguments[1]:
-        #argv[2] == models (svm or dnn or lstms or nns (dnn and lstms) or all, etc.)
-        #argv[3] == testtypes - "," separated 000,001,010,011,100
-        #argv[4] == "," separated test intersections, assume train on all except test
-	#argv[5] == optional - subset, number of training examples - UNUSED
-        #argv[6] == s (save), 0 (dont save) - UNUSED, save all
-        model_arg = arguments[2]
-        if not model_arg in model_choices:
-            print("invalid model choice of:", model_arg)
-            print("valid choices are:", list(model_choices.keys()))
-            return
-        models = model_choices[arguments[2]]
-        testtypes = arguments[3].split(",")
-        saving = True #arguments[6]
-        str_inters = arguments[4].split(",")
+
+    elif mode == "train":
+        model_arg = arguments.models
+        models = argument_utils.model_choices[model_arg]
+        testtypes = arguments.test_nums.split(",")
+        str_inters = arguments.test_intersections.split(",")
+        saving = True # TODO arg?
+
         for test_inters in str_inters:
-          list_test = [int(i) for i in test_inters]
-          train_inters = sorted(list( set([1,2,3,4,5,6,7,8,9]) - set(list_test)))
-          print("test inters:", list_test) 
-          print("train inters:", train_inters)
-          intersections = ([int(i) for i in test_inters],[int(i) for i in train_inters])
-          if arguments[1] == "tr":
-            if not saving:
-                print("indicated to train without saving, which is useless, will save")
-            print("training and saving")
-            saving = True
-            new_train(models, testtypes, intersections, saving)
-          elif arguments[1] == "te":
-            print("testing only")
-            graphs = input("Save graphs?")
-            new_test(models, testtypes, intersections, saving, graphs)
-          elif arguments[1] == "t":
+            list_test = [int(i) for i in test_inters]
+            train_inters = sorted(list( set([1,2,3,4,5,6,7,8,9]) - set(list_test)))
+            print("test inters:", list_test) 
+            print("train inters:", train_inters)
+            intersections = ([int(i) for i in test_inters],[int(i) for i in train_inters])
+            """ Deprecated
+            if arguments.mode == "tr":
+                if not saving:
+                    print("indicated to train without saving, which is useless, will save")
+                print("training and saving")
+                saving = True
+                new_train(models, testtypes, intersections, saving)
+            elif arguments.mode == "te":
+                print("testing only")
+                graphs = input("Save graphs?")
+                new_test(models, testtypes, intersections, saving, graphs)
+            elif arguments.mode == "t":
+            """
             print("training and testing")
-            graphs = False#input("Save graphs?")
+            graphs = False # TODO arg?
             new_train_and_test(models, testtypes, intersections, saving, graphs)
-    elif arguments[1] == "e": 
+
+    elif mode == "evaluate": 
         print("evaluating.")
-        #argv[2] == models (svm or dnn or lstms or nns (dnn and lstms) or all)
-        #argv[3] == testtypes - "," separated 000,001,010,011,100
-        #argv[4] == testOnIntersection - "," separated for multiple
-        #argv[5] is optional 
-        #           if contains "d" then produce distance histograms
-        #           if contains "s" then save scores to files 
-        #           if contains "q" then do only print final outputs
-        #           if contains "l" then load the files. If s and l, will save to excel
-        #           if contains "g" then make graphs and plot (currently unsupported, becoming supported)
-        #       ex: "ds" would make distance histogram values and save
-        model_arg = arguments[2]
-        if not model_arg in model_choices:
-            print("invalid model choice of:", model_arg)
-            print("valid choices are:", list(model_choices.keys()))
-            return
-        models = model_choices[arguments[2]]
-        testtypes = arguments[3].split(",")
-        teston = arguments[4]
-        opts = ""
-        if len(arguments) > 5:
-            opts = arguments[5]
-        doEvalThings(models, testtypes, teston, opts)
-    elif arguments[1] == "x": #experimental stuffs
+        model_arg = arguments.models
+        models = argument_utils.model_choices[model_arg]
+        testtypes = arguments.test_nums.split(",")
+        teston = arguments.test_intersections
+        doEvalThings(models, testtypes, teston, arguments)
+
+    elif mode == "experimental":
         print("doing crazy things probably")
         #argv[2] == models (svm or dnn or lstms or nns (dnn and lstms) or all)
         #argv[3] == testtypes - "," separated 000,001,010,011,100
         #argv[4] == "," separated test intersections, assume train on all except test
 	#argv[5] == optional - subset, number of training examples - UNUSED
         #argv[6] == s (save), 0 (dont save) - UNUSED, save all
-        model_arg = arguments[2]
-        if not model_arg in model_choices:
-            print("invalid model choice of:", model_arg)
-            print("valid choices are:", list(model_choices.keys()))
-            return
-        models = model_choices[arguments[2]]
-        testtypes = arguments[3].split(",")
-        saving = True #arguments[6]
-        str_inters = arguments[4].split(",")
+        model_arg = arguments.models
+        models = argument_utils.model_choices[model_arg]
+        testtypes = arguments.test_nums.split(",")
+        str_inters = arguments.test_intersections.split(",")
+        saving = True # TODO arg?
+
         for test_inters in str_inters:
-          list_test = [int(i) for i in test_inters]
-          train_inters = sorted(list( set([1,2,3,4,5,6,7,8,9]) - set(list_test)))
-          print("test inters:", list_test) 
-          print("train inters:", train_inters)
-          intersections = ([int(i) for i in test_inters],[int(i) for i in train_inters])
-          new_train_and_test(models, testtypes, intersections, saving, False, exper=True)
-    elif arguments[1] == "h":
-        print("options are a - augment, f - featurize, tr - train, te - test, t - train and test")
-        print("secondary options are a=>[], f=>[s or i or n (save general or intersection or dont save)], tr/te/t=>[models, [intersections], y/n (save), optional size of subset]")
+            list_test = [int(i) for i in test_inters]
+            train_inters = sorted(list( set([1,2,3,4,5,6,7,8,9]) - set(list_test)))
+            print("test inters:", list_test) 
+            print("train inters:", train_inters)
+            intersections = ([int(i) for i in test_inters],[int(i) for i in train_inters])
+            new_train_and_test(models, testtypes, intersections, saving, False, exper=True)
     else:
-        print ("invalid argument:", arguments[1], "options are a - augment, f - featurize, tr - train, te - test, t - train and test")
+        print ("invalid argument:", arguments.mode, "options are a - augment, f - featurize, tr - train, te - test, t - train and test")
 
 if __name__ == "__main__":
-    main(sys.argv)
+    main(argument_utils.parse_args())

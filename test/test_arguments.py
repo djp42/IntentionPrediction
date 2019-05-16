@@ -10,32 +10,41 @@ class TestArguments(unittest.TestCase):
     def test_defaults(self):
         args = argument_utils.parse_args(parse_args=False)
         self.assertEqual(args.mode, defaults.MODE)
-        self.assertEqual(args.filename, defaults.FILENAME)
+        self.assertEqual(args.filenames, defaults.FILENAME)
         self.assertEqual(args.featurize_type, defaults.FEATURIZE_TYPE)
+        self.assertEqual(args.models, defaults.MODELS)
         self.assertEqual(args.test_nums, defaults.TEST_NUMS)
         self.assertEqual(args.test_intersections, defaults.TEST_INTERSECTIONS)
 
     def test_non_defaults(self):
         mode = "evaluate"
-        filename = "testfile"
+        filename = "testfile.txt"
         featurize = "n"
+        models = "lstm1"
         testnums = "000,001,111"
         test_intersections = "1,2,3,4"
 
         nondefault_arglist = [
             mode,
-            "--filename", filename,
+            "--filenames", filename,
             "--featurize", featurize,
+            "--models", models,
             "--test_nums", testnums,
             "--test_intersections", test_intersections
         ]
 
         args = argument_utils.parse_args(parse_args=False, arglist=nondefault_arglist)
         self.assertEqual(args.mode, mode)
-        self.assertEqual(args.filename, filename)
+        self.assertEqual(args.filenames, [filename])
         self.assertEqual(args.featurize_type, featurize)
+        self.assertEqual(args.models, models)
         self.assertEqual(args.test_nums, testnums)
         self.assertEqual(args.test_intersections, test_intersections)
+
+    def test_multiple_filenames(self):
+        args = argument_utils.parse_args(
+            parse_args=False, arglist=["a", "--filenames", "testfile1.txt", "testfile2.txt"])
+        self.assertEqual(args.filenames, ["testfile1.txt", "testfile2.txt"])
 
     def test_flags(self):
         flag_shorthand_arglist = ["evaluate", "-d", "-s", "-q", "-l", "-x"]
