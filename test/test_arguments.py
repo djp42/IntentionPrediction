@@ -71,6 +71,13 @@ class TestArguments(unittest.TestCase):
         self.assertTrue(args.excel)
     
     #def test_invalid_options(self):
+    
+    def test_expand_mode(self):
+        for key, value in argument_utils.PROGRAM_MODES.items():
+            self.assertEqual(argument_utils.expand_mode(key), value)
+            self.assertEqual(argument_utils.expand_mode(value), value)
+        with self.assertRaises(ValueError):
+            argument_utils.expand_mode("DOESNOTEXIST1234132")
 
 if __name__ == '__main__':
     unittest.main()

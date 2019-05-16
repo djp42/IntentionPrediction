@@ -5,10 +5,6 @@ import sys
 sys.path.append(os.environ["INTENTPRED_PATH"])
 from utils import defaults as D
 
-# for argparsing
-def str2bool(v):
-    return v.lower() == "true"
-
 ### HANDLING PROGRAM MODES ###
 PROGRAM_MODES = {
     "c" : "combine", 
