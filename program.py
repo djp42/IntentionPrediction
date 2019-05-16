@@ -765,7 +765,6 @@ def doEvalThings(models, testtypes, teston, arguments):
     arg2, ... are options specific to arg1
 '''
 def main(arguments):
-    print(arguments)
     mode = argument_utils.expand_mode(arguments.mode)
     if mode == "combine": 
         print("Combining trajectory files")
