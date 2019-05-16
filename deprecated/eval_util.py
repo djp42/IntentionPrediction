@@ -6,11 +6,14 @@ utilities to help with evaluating the SVM
 @author: LordPhillips
 """
 
+import os
+import sys
+sys.path.append(os.environ["INTENTPRED_PATH"])
+
 from sklearn import metrics
 from utils import constants as c
 from utils import data_util as du
 import numpy as np
-import os
 import math
 import matplotlib.pyplot as plt
 from IPython import display

@@ -43,7 +43,7 @@ There actually aren't that many dependencies for the python portion. Julia is no
 ## Setup
 1. Download data and set paths.
     - `./build.sh`
-        - downloads data from `https://github.com/djp42/IntentionPrediction/releases/download/v0.1/data.tar.gz` and extracts to [res/](res/)
+        - downloads data from [https://github.com/djp42/IntentionPrediction/releases/download/v0.1/data.tar.gz](https://github.com/djp42/IntentionPrediction/releases/download/v0.1/data.tar.gz) and extracts to [res/](res/)
         - sets `INTENTPRED_PATH` to the current directory if it has not been set before.
 2. (optional) Process data.
     - `python program.py c`
@@ -61,6 +61,19 @@ There actually aren't that many dependencies for the python portion. Julia is no
     - option `s` is basically deprecated. option `i` means we save features by intersection, which is more efficient and useful.
     - This can take a while for the robust feature sets including neighbors and history, up to over a half hour for test features 111.
 
+### Julia Setup
+1. Install the `julia` programming language using your system default or direct download from [https://julialang.org/downloads/](https://julialang.org/downloads/)
+2. Add the `julia` requirements. Open julia interpreter and use the package manager:
+    ```
+    julia
+        using Pkg
+        Pkg.add("BayesNets")
+        Pkg.add("Discretizers")
+        Pkg.add("JLD2")
+        Pkg.add("DelimitedFiles")
+    )
+    ```
+
 ## Execution
 The file "program.py" is where nearly everything is executed from. 
 I will admit to have made this file before discovering the beauty of python argparse, so apologies in advance that I did everything by hand...
@@ -76,8 +89,8 @@ After the setup from the previous section, we can produce results.
         - additional arguments specified in program.py. 
 * Train and test the discrete bayesnet
     - `julia BayesNet.jl`       
-    - uses the same features created, but trains and tests the discrete bayesian network
-* Analyze
+    - uses the same features created, but trains and tests the discrete bayesian network.
+* Analyze (deprecated)
     - `python analysis.py`  
         - to analyze the models.
         - Currently unsupported on all cases
@@ -92,28 +105,22 @@ BayesNet.jl: Fits and saves output for bayesian network run on the specified tes
 
 program.py: The "runfile" for SVM, DNN, LSTMs run on the specified test (change in code). Also where calls to functions that process data take place, this is what generates results.
 
-validation.py: At one point did small tests for LSTM and others, but now mainly to call evaluation functions (like plotting, scoring)
+validation.py: [deprecated] At one point did small tests for LSTM and others, but now mainly to call evaluation functions (like plotting, scoring)
 
 
-In lib:
+In [utils/](utils/):
 * constants: constants... (and some functions because bad style I know... srry)
 * data2_class: improved class for data structure, main purpose is a dictionary of frames and vehicle ids to data, and specific functions. the functions are part of the class because they are very specific and there is only one class instance at any time anyway
 * data_class: mostly deprecated, used for old stuff still, may be needed if remaking data from raw
 * data_util: various utilities for helping with data manipulation at all stages
 * driver_util: some more utilities that have a more specific purpose to this project
-* eval_util: various functions and methods to evaluate the results. No result generation except thebaseline
-* frame_utile: mostly deprecated at this point, don't even remember it.
-* goal_processing: goal-specific data processing
-* goal_util: goal-specific utilities
-* learn_util: mostly deprecated/from the 229 project not the research project
-* merger_methods: not applicable to research project - is methods to help identify and quantify mergingvehicles
-* signals_util: utilities in my attempt to use signals as features, not used in final
-* util.py: unmodified since class project, uninteresting
+* eval_util: [deprecated] various functions and methods to evaluate the results. No result generation except thebaseline
+* frame_util: Used for occasional utilties like path names, frame handling, etc. Should be revisted and cleaned up.
+* signals_util: [deprecated] utilities in my attempt to use signals as features, not used in final
+* util.py: [deprecated] unmodified since class project, uninteresting
 * vehicleclass.py: specific functions for the vehicle class (like getLaneID)
 
-In bin:
-* almost entirely useless now, but setup still helps on start, and visualize can sometimes be usefule.
- 
+
 ## TODO
 (This is mostly for me, but also if you want to work on it!)
 
@@ -123,7 +130,7 @@ In bin:
 * `INTENTPRED_PATH` use throughout.
 * Better filepaths.
 * Upgrade to newer version of `tensorflow`
-* Julia install instructions / 1.0 support for bayes-net
+* Ensure saving / loading of all models works.
 * Check use of `DistInd` in `score_utils.py` for confusion matrix (it does not have a test num so it may be incorrect usage for test 0...?).
 * Clean up code. There is definitely a lot of redundant and messy code, that I should probably clean up at some point.
 * Add comments

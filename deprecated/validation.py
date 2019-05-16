@@ -6,6 +6,9 @@ Validation script
 @author: djp42
 """
 
+import os
+import sys
+sys.path.append(os.environ["INTENTPRED_PATH"])
 
 import numpy as np
 from utils import constants as c
@@ -22,7 +25,6 @@ from sklearn import linear_model
 from sklearn import preprocessing
 import tensorflow as tf
 import random
-import os
 import time
 import tensorflow.contrib.learn as skflow
 from sklearn import datasets, metrics

@@ -3,10 +3,13 @@ import matplotlib.pyplot as plt
 import time
 import pylab as pl
 import importlib
-from utils import util
-import learn_util
-from copy import deepcopy
+
 import os
+import sys
+sys.path.append(os.environ["INTENTPRED_PATH"])
+
+from utils import util
+from copy import deepcopy
 from utils import frame_util as futil
 import shutil
 

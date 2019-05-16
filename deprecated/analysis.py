@@ -35,6 +35,10 @@ Created on Sun Dec 11 16:51:10 2016
             and  I hypothesize velocity will be the most sensitive, with headway mostly ignored.
 '''
 
+import os
+import sys
+sys.path.append(os.environ["INTENTPRED_PATH"])
+
 from utils import LSTM
 from sklearn.externals import joblib
 from sklearn import svm
@@ -48,8 +52,6 @@ import tensorflow.contrib.learn as skflow
 
 from utils import constants as c
 from utils import data_util as du
-
-import os
 import time
 
 import numpy as np
