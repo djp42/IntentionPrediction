@@ -165,92 +165,6 @@ function makeIndexToID(numFeatures, testnum, laneTypeEncodedLen)
     return indexToID
 end
 
-# fit function --- modified from https://github.com/sisl/BayesNets.jl/blob/master/src/DiscreteBayesNet/greedy_hill_climbing.jl
-function Distributions.fit(::Type{DiscreteBayesNet}, data::DataFrame, params::GreedyHillClimbing, indexOfOut::Int;
-    ncategories::Vector{Int} = map!(
-      i->infer_number_of_instantiations(data[i]), 
-      Array{Int}(undef, ncol(data)), 
-      1:ncol(data)),
-    )
-
-    n = ncol(data)
-    parent_list = map!(i->Int[], Array{Vector{Int}}(undef, n), 1:n)
-    datamat = convert(Matrix{Int}, data)'
-    score_components = bayesian_score_components(parent_list, ncategories, datamat, params.prior, params.cache)
-
-    while true
-      best_diff = 0.0
-      best_parent_list = parent_list
-      i = indexOfOut
-      parent_list[i] = collect(1:n)
-      break
-      #for i in 1:n #this is added for full fitting
-        # 1) add an edge (j->i)
-        if length(parent_list[i]) < params.max_n_parents
-            for j in deleteat!(collect(1:n), parent_list[i])
-                    if adding_edge_preserves_acyclicity(parent_list, j, i)
-                        new_parents = sort!(push!(copy(parent_list[i]), j))
-                        new_component_score = bayesian_score_component(i, new_parents, ncategories, datamat, params.prior, params.cache)
-                    if new_component_score - score_components[i] > best_diff
-                        best_diff = new_component_score - score_components[i]
-                        best_parent_list = deepcopy(parent_list)
-                        best_parent_list[i] = new_parents
-                    end
-                end
-             end
-        end
-
-        # 2) remove an edge
-        for (idx, j) in enumerate(parent_list[i])
-
-            new_parents = deleteat!(copy(parent_list[i]), idx)
-            new_component_score = bayesian_score_component(i, new_parents, ncategories, datamat, params.prior, params.cache)
-            if new_component_score - score_components[i] > best_diff
-                best_diff = new_component_score - score_components[i]
-                best_parent_list = deepcopy(parent_list)
-                best_parent_list[i] = new_parents
-            end
-            # 3) flip an edge
-            new_parent_list = deepcopy(parent_list) # TODO: make this more efficient
-            deleteat!(new_parent_list[i], idx)
-
-            if adding_edge_preserves_acyclicity(new_parent_list, i, j)
-                sort!(push!(new_parent_list[j], i))
-                new_diff = bayesian_score_component(i, new_parent_list[i], ncategories, datamat, params.prior, 
-                                                       params.cache) - score_components[i]
-                new_diff += bayesian_score_component(j, new_parent_list[j], ncategories, datamat, params.prior, 
-                                                       params.cache) - score_components[j]
-                if new_diff > best_diff
-                    best_diff = new_diff
-                    best_parent_list = new_parent_list
-                end
-            end
-        end
-
-        if best_diff > 0.0
-            parent_list = best_parent_list
-            score_components = bayesian_score_components(parent_list, ncategories, datamat, params.prior, params.cache)
-        else
-            break
-        end
-      #end   #this is for the "for i in 1:n"
-    end
-    # construct the BayesNet
-    cpds = Array{DiscreteCPD}(undef, n)
-    varnames = names(data)
-    for j in 1:n
-        name = varnames[j]
-        parents = varnames[parent_list[j]]
-        cpds[j] = Distributions.fit(DiscreteCPD, data, name, parents, params.prior,
-                      parental_ncategories=ncategories[parent_list[j]],
-                      target_ncategories=ncategories[j])
-    end
-    #println(cpds)
-    println("Parent List: ", parent_list)
-    BayesNet(cpds)
-end
-
-
 #big for loop
 println("Loading features/targets for BN")
 allFeatures, allTargets, numFeatures = loadAllFeaturesTargets(paths)
@@ -314,16 +228,20 @@ for inter in test_intersections
       #max_parents = min(numFeatures, max_parents)
       println("Max parents: ", max_parents)
 
-      params = GreedyHillClimbing(ScoreComponentCache(traindata), max_n_parents=max_parents, prior=UniformPrior())
+      params = GreedyHillClimbing(
+        ScoreComponentCache(traindata), 
+        max_n_parents=max_parents, 
+        prior=UniformPrior())
       println("Done fitting params, starting to fit BN")
       num_bins_all = map!(
         i->infer_number_of_instantiations(alldata[i]), 
         Array{Int64}(undef, ncol(alldata)), 
         1:ncol(alldata)
         )
-      bnDis = fit(DiscreteBayesNet, traindata, params, moveIndex, ncategories=num_bins_all)
+      #bnDis = fit(DiscreteBayesNet, traindata, params, moveIndex, ncategories=num_bins_all)
+      bnDis = fit(DiscreteBayesNet, traindata, params, ncategories=num_bins_all)
       println("Done fitting BN for CV #: $i")
-      save(string("$basepath$i","/BN_model.jld"), "bnDis", bnDis)
+      #JLD2.save(string("$basepath$i","/BN_model.jld"), "bnDis", bnDis)
       score = 0
       numNaN = 0
       nrows = length(testlines[:,1])
@@ -336,7 +254,8 @@ for inter in test_intersections
           for move in moveCats
             featureline = testdata[index,:]
             featureline[moveIndex] = encode(moveDiscretizer, move)
-            p_dists[move] = pdf(bnDis, featureline)
+            p_dists[move] = pdf(bnDis, DataFrame(featureline))
+            # featureline is of type DataFrameRow, which is not supported for some reason...
           end
           for x in p_dists
             if !(x > 1) && !(x < 1) && !(x == 1)
