@@ -117,11 +117,11 @@ In bin:
 ## TODO
 (This is mostly for me, but also if you want to work on it!)
 
-* Use `argparse`
-* Add some unittests
+* Add more unittests
 * Better object oriented programming throughout.
-* Clean up files, removing what is unnecessary to the intention prediction. 
-* `INTENTPRED_PATH`
+* Further clean files, removing what is unnecessary to the intention prediction. 
+* `INTENTPRED_PATH` use throughout.
+* Better filepaths.
 * Upgrade to newer version of `tensorflow`
 * Julia install instructions / 1.0 support for bayes-net
 * Check use of `DistInd` in `score_utils.py` for confusion matrix (it does not have a test num so it may be incorrect usage for test 0...?).
