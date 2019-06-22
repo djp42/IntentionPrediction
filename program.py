@@ -9,7 +9,7 @@ run with:
 $ nohup python3 -u program.py | ts | tee ./<logfile>
 Change the model in run() function
 
-@author: LordPhillips
+@author: djp42
 """
 
 import numpy as np
@@ -17,17 +17,18 @@ from collections import defaultdict
 #import matplotlib.pyplot as plt
 #import seaborn as sns
 #from IPython import display
-from lib import constants as c
-from lib import data2_class as dd2
-from lib import data_util as du
-from lib import vehicleclass as v
-from lib import frame_util as futil
-from lib import driver_util as dru
-from lib import score_util as sutil
-#from lib import eval_util as eutil
-#from lib import goal_processing as goals
-#from lib import signals_util as su
-from lib import LSTM
+from utils import constants as c
+from utils import data2_class as dd2
+from utils import data_util as du
+from utils import vehicleclass as v
+from utils import frame_util as futil
+from utils import driver_util as dru
+from utils import score_util as sutil
+from utils import argument_utils
+#from utils import eval_util as eutil
+#from utils import goal_processing as goals
+#from utils import signals_util as su
+from utils import LSTM
 from sklearn.externals import joblib
 from sklearn import svm
 from sklearn.naive_bayes import GaussianNB
@@ -107,8 +108,8 @@ def load_fids(load_folder):
             if len(sub_folder) > 1:
                 continue
             i = int(sub_folder)
-            fullpath = load_folder + sub_folder + '/'
-            secFids[i] = np.loadtxt(fullpath + "Fids")
+            fullpath = os.path.join(load_folder, sub_folder, "Fids")
+            secFids[i] = np.loadtxt(fullpath)
             allFids.extend(secFids[i])
     return secFids, allFids
 
@@ -313,7 +314,7 @@ def trainTestDNN(Xtrain, Ytrain, Xtest, Ytest, testnum, save_path=None, max_epoc
             feature_columns = tf.contrib.learn.infer_real_valued_columns_from_input(Xtrain),
             hidden_units=[128, 128], n_classes=nclasses, model_dir=modeldir)
     else:
-        modeldir = "tmp_DNN_"+ testnum + os.sep + str(len(Xtest))
+        modeldir = "tmp_DNN_" + testnum, str(len(Xtest))
         check_make_paths([modeldir])
         classifier = skflow.DNNClassifier(
             feature_columns = tf.contrib.learn.infer_real_valued_columns_from_input(Xtrain),
@@ -507,14 +508,15 @@ def newCreateAllFeaturesAndTargets(testtypes, filename_lank="trajectories-lanker
     filepath1 = dru.findPathForFile(filename_lank)
     filepath2 = dru.findPathForFile(filename_peach)
     if byIntersection:
-        save_path = c.PATH_TO_RESULTS + "ByIntersection" + os.sep
+        save_path = os.path.join(c.PATH_TO_RESULTS, "ByIntersection")
     else:
-        save_path = c.PATH_TO_RESULTS + "General" + os.sep
+        save_path = os.path.join(c.PATH_TO_RESULTS, "General")
     check_make_paths([save_path])
     for testnum in testtypes:
-        check_make_paths([save_path+testnum+os.sep])
+        check_make_paths([os.path.join(save_path, testnum)])
         allFeatures_normal, allFeatures_LSTM = getAllPossibleFeatures(filepath1, filepath2,
-                               lanetype=bool(int(testnum[0])), history=bool(int(testnum[1])), histFs = [5,10,20,30], 
+                               lanetype=bool(int(testnum[0])), history=bool(int(testnum[1])), 
+                               histFs = [5,10,20,30], 
                                traffic = bool(int(testnum[2])), numFramesToFind=20)
         if not save: continue
         if not byIntersection:
@@ -523,10 +525,10 @@ def newCreateAllFeaturesAndTargets(testtypes, filename_lank="trajectories-lanker
             continue
         for intersectionID in allFeatures_LSTM.keys():
             #save features
-            check_make_paths([save_path+testnum+os.sep+str(intersectionID) + os.sep])
+            check_make_paths([os.path.join(save_path, testnum, str(intersectionID))])
             print(allFeatures_LSTM[intersectionID].shape)
-            np.savetxt(save_path + testnum + os.sep + str(intersectionID) + os.sep + "featuresAndTargets", allFeatures_normal[intersectionID])
-            np.save(save_path + testnum + os.sep + str(intersectionID) + os.sep + "LSTM_Formatted_featuresAndTargets", allFeatures_LSTM[intersectionID])
+            np.savetxt(os.path.join(save_path, testnum, str(intersectionID), "featuresAndTargets"), allFeatures_normal[intersectionID])
+            np.save(os.path.join(save_path, testnum, str(intersectionID), "LSTM_Formatted_featuresAndTargets"), allFeatures_LSTM[intersectionID])
     return allFeatures_normal, allFeatures_LSTM
     #make features with vehicle id and frame id, which can be queried later
     #no longer using lane type feature, except must include for conditional baseline
@@ -558,26 +560,26 @@ def augAllOrigFiles():
     stringToStart = "AUG"
     for subdir, dirs, files in os.walk(c.PATH_TO_RESOURCES):
         for file in files:
-            filepath = subdir + os.sep + file
+            filepath = os.path.join(subdir, file)
             if not filepath.endswith(".txt") or not file[:3] == stringToStart: 
                 continue    
             print(filepath)
             du.augOrigData(filepath)
 
 def doStuffForPeachtree():
-    folder = c.PATH_TO_RESOURCES + "Peachtree" + os.sep
+    folder = os.path.join(c.PATH_TO_RESOURCES, "Peachtree")
     filename1 = "trajectories-1245pm-0100pm.txt"
     filename2 = "trajectories-0400pm-0415pm.txt"
     #for filepath in [folder + filename1, folder+filename2]:
     #    du.augOrigData(filepath)
     #combine these two that are not following one another
-    newFile = futil.combineTrajFilesNoOverlap(folder + filename1, 
-                              folder + filename2, 
-                              skipFront=500, skipEnd=1000)
-    print(newFile)
+    newFile = futil.combineTrajFilesNoOverlap(
+        os.path.join(folder, filename1), 
+        os.path.join(folder, filename2), 
+        skipFront=500, skipEnd=1000)
     return(newFile)
 
-def combineThose2files(overlapStartFrame=10201, maxVid1=1438):
+def combineLankershimFiles(overlapStartFrame=10201, maxVid1=1438):
     file1 = 'trajectories-0830am-0845am.txt'
     file2  ='trajectories-0845am-0900am.txt'
     return futil.combineTrajFiles(dru.findPathForFile(file1), dru.findPathForFile(file2))
@@ -595,7 +597,7 @@ def new_test(models, testtypes, intersections, saving, graphs):
 
 
 def new_train_and_test(models, testtypes, split_inters, saving, graphs, exper=False):
-    path_to_load = c.PATH_TO_RESULTS + "ByIntersection" + os.sep 
+    path_to_load = os.path.join(c.PATH_TO_RESULTS, "ByIntersection") 
     hasLSTM = hasAnLSTM(models)
     print("in new_train_and_test, params:", models, testtypes, split_inters, saving, graphs, exper)
     train_inters = split_inters[1] 
@@ -603,8 +605,8 @@ def new_train_and_test(models, testtypes, split_inters, saving, graphs, exper=Fa
     print(train_inters)
     print(test_inters)
     for testnum in testtypes:
-        load_folder = path_to_load + testnum + os.sep
-        save_folder = load_folder + "TestOn" + ",".join([str(i) for i in test_inters]) + os.sep
+        load_folder = os.path.join(path_to_load, testnum)
+        save_folder = os.path.join(load_folder, "TestOn" + ",".join([str(i) for i in test_inters]))
         check_make_paths([save_folder])
         if hasLSTM:
             featuresLSTM, targetsLSTM = du.getFeaturesLSTM(load_folder, testnum, train_inters)
@@ -638,20 +640,20 @@ def new_train_and_test(models, testtypes, split_inters, saving, graphs, exper=Fa
                 testFeatureSelection(model, Xtrain, Ytrain, Xtest, Ytest, testnum)
                 continue
             Ypred, timeFit, timePred, all_tests_x, all_tests_y = testFeatureSelection(model, Xtrain, Ytrain, Xtest, Ytest, testnum, save_folder, test_inters, skip=True)
-            np.savetxt(save_folder + "Ypred_" + model, np.array(Ypred))
+            np.savetxt(os.path.join(save_folder, "Ypred_" + model), np.array(Ypred))
             print(model, "predictions saved, test", testnum)
 
 
 def evaluate(models, testnums, testOn=["1,2,3,4"], dist_hist=False, quiet=False, load=False):
     scores = defaultdict(dict)  #model: (score, numWrong)
     if load:
-        scores = loadScores(score_folder=os.getcwd()+os.sep+"scores"+os.sep+"".join([i for i in testOn.split(",")])+os.sep, models=models, testnums=testnums, dist_hist=dist_hist)
+        scores = loadScores(
+            score_folder=os.path.join(c.PATH_TO_SCORES, "".join([i for i in testOn.split(",")])),
+            models=models, testnums=testnums, dist_hist=dist_hist)
         return scores
     for testnum in testnums:
         print("Doing test:", testnum, "testing on:", testOn)
-        #test_folder = c.PATH_TO_RESULTS[:-1] + "_backup/" + "ByIntersection" + os.sep + testnum + os.sep
-        #print(test_folder)
-        test_folder = c.PATH_TO_RESULTS + "ByIntersection" + os.sep + testnum + os.sep
+        test_folder = os.path.join(c.PATH_TO_RESULTS, "ByIntersection", testnum)
         for model in models:
             print("Scoring for model:", model)
             score = sutil.score(test_folder, model, testInters=testOn, dist_hist=dist_hist, quiet=quiet) 
@@ -661,10 +663,11 @@ def evaluate(models, testnums, testOn=["1,2,3,4"], dist_hist=False, quiet=False,
     return scores
 
 #save_folder should swap "general" for testOnX if not the general(averaged) results
-def saveScores(scores, save_folder=os.getcwd()+os.sep+"scores"+os.sep+"general", dist_hist=False, loaded=False):
+def saveScores(scores, save_folder=os.path.join(c.PATH_TO_SCORES,"general"), 
+               dist_hist=False, loaded=False):
     for testnum in sorted(list(scores.keys())):
         for model in sorted(list(scores[testnum].keys())):
-            filepath = save_folder + os.sep + str(testnum) + os.sep + model + os.sep
+            filepath = os.path.join(save_folder, str(testnum), model)
             check_make_paths([filepath])
             if not dist_hist:
                 accuracy, precision, score = scores[testnum][model]
@@ -683,10 +686,10 @@ def saveScores(scores, save_folder=os.getcwd()+os.sep+"scores"+os.sep+"general",
                 np.savetxt(filepath+"accuracies.txt",accuracies)
                 np.savetxt(filepath+"counts.txt",counts)
 
-def saveAllScoresExcel(scores, save_folder=os.getcwd()+os.sep+"scores"+os.sep+"general", dist_hist=False):
+def saveAllScoresExcel(scores, save_folder=os.path.join(c.PATH_TO_SCORES,"general"), dist_hist=False):
     valstosave = []
     for testinter in scores: #should only be one
-        saveFile = save_folder + os.sep + "scores_dist_" + str(dist_hist)
+        saveFile = os.path.join(save_folder, "scores_dist_" + str(dist_hist))
         with open(saveFile, 'w') as f:
             for testnum in sorted(scores[testinter]):
                 f.write(str(testnum)+"\n")
@@ -709,19 +712,19 @@ def saveAllScoresExcel(scores, save_folder=os.getcwd()+os.sep+"scores"+os.sep+"g
                                 f.write(" ".join([str(pos), str(val)]) + "\n")
                             first=False
 
-def loadScores(score_folder = os.getcwd()+os.sep+"scores"+os.sep, models=["LSTM_128x2"], testnums=["000"], dist_hist=False):
+def loadScores(score_folder = c.PATH_TO_SCORES, models=["LSTM_128x2"], testnums=["000"], dist_hist=False):
     scores = {}
     for testnum in testnums:
         scores[testnum] = {}
         for model in models:
-            filepath = score_folder + str(testnum) + os.sep + model + os.sep
+            filepath = os.path.join(score_folder, str(testnum), model)
             if not dist_hist:
-                accuracy = np.loadtxt(filepath+"accuracy.txt")
-                score = np.loadtxt(filepath+"score.txt")
+                accuracy = np.loadtxt(filepath + "accuracy.txt")
+                score = np.loadtxt(filepath + "score.txt")
                 scores[testnum][model] = (accuracy, score)
             else:
-                accuracies = np.loadtxt(filepath+"accuracies")
-                counts = np.loadtxt(filepath+"counts")
+                accuracies = np.loadtxt(filepath + "accuracies")
+                counts = np.loadtxt(filepath + "counts")
                 scores[testnum][model] = (accuracies, counts)
     return scores
 
@@ -731,211 +734,130 @@ def printScores(scores):
         for model in sorted(list(scores[testnum].keys())):
             print(model, scores[testnum][model])
             
-def doEvalThings(models, testtypes, teston, opts):
+def doEvalThings(models, testtypes, teston, arguments):
     all_scores = {}
     for testinter in teston.split(","):
         this_inters = ",".join(testinter)
-        all_scores[testinter] = evaluate(models, testtypes, this_inters, "d" in opts, "q" in opts, "l" in opts)
+        all_scores[testinter] = evaluate(
+            models, testtypes, this_inters, 
+            arguments.make_distance_histograms,
+            arguments.quiet_eval,
+            arguments.load_scores)
     print("".join(["-"]*80))
     print("".join(["-"]*80))
     for testinter in sorted(list(all_scores.keys())):
         print("".join(["="]*40))
-        if not "d" in opts:
+        if not arguments.make_distance_histograms:
             print("score for testinter:", testinter)
             printScores(all_scores[testinter])
-        if "s" in opts and "l" not in opts:
-            saveScores(all_scores[testinter],save_folder=os.getcwd()+os.sep+"scores"+os.sep+str(testinter), dist_hist = "d" in opts)
-        if "l" in opts and "s" in opts:
-            saveAllScoresExcel(all_scores, save_folder=os.getcwd()+os.sep+"scores"+os.sep+str(testinter), dist_hist = "d" in opts)
+        if arguments.save_scores and not arguments.load_scores:
+            saveScores(all_scores[testinter],
+                save_folder = os.path.join(c.PATH_TO_SCORES, str(testinter)), 
+                dist_hist = arguments.make_distance_histograms)
+        if (arguments.load_scores and arguments.save_scores) or arguments.excel:
+            saveAllScoresExcel(all_scores, 
+                save_folder = os.path.join(c.PATH_TO_SCORES, str(testinter)), 
+                dist_hist = arguments.make_distance_histograms)
 
-        
-#THIS IS ALL THAT IS NEEDED STARTING WITH A PLAIN TRAJECTORY FILE
-#filepath = combineThose2files()  #<--- only needed when combining
-#du.augOrigData(dru.findPathForFile(filename))
-#newfilename = 'AUGv2_' + filename
-
-#signalfilename='Signals0845-0900handInferred.txt'
-#su.visualizeForValidation(dru.findPathForFile(filename), formattype=0)
-#su.visualizeForValidation(dru.findPathForFile(filename), dru.findPathForFile(signalfilename), formattype=2)
-#signalDict = su.readSignalTimeSplit(dru.findPathForFile(filename))
-#testLSTM()
-
-
-#createFeaturesOnly(dru.findPathForFile("AUGv2_trajectories-0830am-0900am.txt"), 2)
-#createFeaturesOnly(dru.findPathForFile("AUGv2_trajectories-0830am-0900am.txt"), 2.1)
-
-#doStuffForPeachtree()
-
-#createAllFeaturesAndTargets()
-
-'''
-premadeFeatures = True
-run(dru.findPathForFile("AUGv2_trajectories-0830am-0900am.txt"), 
-    load=premadeFeatures, test_nums=tests_to_run, models=models_to_run, 
-    #filepath2 = None)
-    filepath2 = dru.findPathForFile("trajectories-peachtree.txt"))
-'''
-#doStuffForPeachtree()
-#evalu.loadPrintScore("", p_dist=True, offset=False, model_type="BN")
-#evalu.loadPrintScore("", p_dist=True, offset=True, model_type="LSTMsmall")
-
-nonLSTMs = ["SVM", "BN", "nb", "DNN"]
-LSTMs = ["LSTM_128x2", "LSTM_128x3", "LSTM_256x2"]
-baselines = ["Marginal", "nb"] 
-#nb is naive bayes
-model_choices = {
-    "all": ["Marginal", "SVM", "BN", "nb", "DNN", "LSTM_128x2", "LSTM_128x3", "LSTM_256x2"],
-    "bases": baselines,
-    "nb": ["nb"],
-    "lstms": LSTMs,
-    "svm": ["SVM"],
-    "bn": ["BN"],
-    "svmbn": ["SVM", "BN"],
-    "dnn": ["DNN"],
-    "nlstms": nonLSTMs,
-    "nns": ["DNN", "LSTM_128x2", "LSTM_128x3", "LSTM_256x2"],
-    "nn": ["DNN", "LSTM_128x2", "LSTM_128x3", "LSTM_256x2"],
-    "lstm1": ["LSTM_128x2"],
-    "lstm2": ["LSTM_128x3"],
-    "lstm3": ["LSTM_256x2"],
-    "lstmtest": ["LSTM_test1"],
-    "nsvmbn": ["Marginal", "nb", "DNN", "LSTM_128x2", "LSTM_128x3", "LSTM_256x2"],
-    "nsvm": ["Marginal", "BN", "nb", "DNN", "LSTM_128x2", "LSTM_128x3", "LSTM_256x2"],
-    "nbasesbn": ["SVM", "DNN", "LSTM_128x2", "LSTM_128x3", "LSTM_256x2"],
-    "nbasessvm": ["BN", "DNN", "LSTM_128x2", "LSTM_128x3", "LSTM_256x2"],
-    "nbases": ["SVM", "BN", "DNN", "LSTM_128x2", "LSTM_128x3", "LSTM_256x2"],
-    "dnnlstm1": ["DNN", "LSTM_128x2"],
-    "notnns": ["Marginal", "SVM", "BN", "nb"],
-}
 
 '''To incorporate command line arguments
     arg1 = augment, featurize, train, test, or train and test, or evaluate saved predictions
     arg2, ... are options specific to arg1
 '''
-def main():
-    if len(sys.argv) == 1:
-        print("No arguments received, defaulting to...")
-    elif sys.argv[1] == "a":
+def main(arguments):
+    mode = argument_utils.expand_mode(arguments.mode)
+    if mode == "combine": 
+        print("Combining trajectory files")
+        peachtree = doStuffForPeachtree()
+        lankershim = combineLankershimFiles()
+        return peachtree, lankershim
+
+    elif mode == "augment":
         print("Augmenting raw trajectoris")
-        for filename in sys.argv[2:]:
+        for filename in arguments.filenames:
             print("Augmenting file:", filename)
             du.augOrigData(dru.findPathForFile(filename))
-    elif sys.argv[1] == "c": 
-        print("Combining trajectory files")
-        doStuffForPeachtree()
-        combineThose2files()
-    elif sys.argv[1] == "f":
+
+    elif mode == "featurize":
         print("Featurizing augmented data")
-        if len(sys.argv) > 3:
-            filename_lank = sys.argv[3]
-            filename_peach = sys.argv[4]
-        else:
-            filename_lank = "AUGv2_trajectories-lankershim.txt"
-            filename_peach = "AUGv2_trajectories-peachtree.txt"
-        print("Enter ',' separated testtypes, blank for all")
-        testtypes = input()
-        if testtypes == "": testtypes = ["000","100","001","010","011"]
-        else: testtypes = testtypes.split(",")
+        filename_lank = "AUGv2_trajectories-lankershim.txt"
+        filename_peach = "AUGv2_trajectories-peachtree.txt"
+        testtypes = arguments.test_nums.split(",")
+
         print("Test types to featurize for:", testtypes)
-        print("Lank as:", filename_lank, "Peach as:", filename_peach)
-        if sys.argv[2] == "s":
+        if arguments.featurize_type == "s":
             print("saving featurzied general data")
             newCreateAllFeaturesAndTargets(testtypes,filename_lank, filename_peach, save=True, byIntersection=False)
-        elif sys.argv[2] == "i":
+        elif arguments.featurize_type == "i":
             print("saving feautrized data by intersection")
             newCreateAllFeaturesAndTargets(testtypes,filename_lank, filename_peach, save=True)
-        elif sys.argv[2] == "n":
+        elif arguments.featurize_type == "n":
             print("not saving")
             newCreateAllFeaturesAndTargets(testtypes,filename_lank, filename_peach, save=False)
         else:
-            print("invalid featurization option,", sys.argv[2], "options are s (save general), i (save by intersection), n (dont save - not recommended)")
+            print("invalid featurization option,", arguments.featurize_type, "options are s (save general), i (save by intersection), n (dont save - not recommended)")
         print("Done featurizing")
-    elif "t" in sys.argv[1]:
-        #argv[2] == models (svm or dnn or lstms or nns (dnn and lstms) or all, etc.)
-        #argv[3] == testtypes - "," separated 000,001,010,011,100
-        #argv[4] == "," separated test intersections, assume train on all except test
-	#argv[5] == optional - subset, number of training examples - UNUSED
-        #argv[6] == s (save), 0 (dont save) - UNUSED, save all
-        model_arg = sys.argv[2]
-        if not model_arg in model_choices:
-            print("invalid model choice of:", model_arg)
-            print("valid choices are:", list(model_choices.keys()))
-            return
-        models = model_choices[sys.argv[2]]
-        testtypes = sys.argv[3].split(",")
-        saving = True #sys.argv[6]
-        str_inters = sys.argv[4].split(",")
+
+    elif mode == "train":
+        model_arg = arguments.models
+        models = argument_utils.model_choices[model_arg]
+        testtypes = arguments.test_nums.split(",")
+        str_inters = arguments.test_intersections.split(",")
+        saving = True # TODO arg?
+
         for test_inters in str_inters:
-          list_test = [int(i) for i in test_inters]
-          train_inters = sorted(list( set([1,2,3,4,5,6,7,8,9]) - set(list_test)))
-          print("test inters:", list_test) 
-          print("train inters:", train_inters)
-          intersections = ([int(i) for i in test_inters],[int(i) for i in train_inters])
-          if sys.argv[1] == "tr":
-            if not saving:
-                print("indicated to train without saving, which is useless, will save")
-            print("training and saving")
-            saving = True
-            new_train(models, testtypes, intersections, saving)
-          elif sys.argv[1] == "te":
-            print("testing only")
-            graphs = input("Save graphs?")
-            new_test(models, testtypes, intersections, saving, graphs)
-          elif sys.argv[1] == "t":
+            list_test = [int(i) for i in test_inters]
+            train_inters = sorted(list( set([1,2,3,4,5,6,7,8,9]) - set(list_test)))
+            print("test inters:", list_test) 
+            print("train inters:", train_inters)
+            intersections = ([int(i) for i in test_inters],[int(i) for i in train_inters])
+            """ Deprecated
+            if arguments.mode == "tr":
+                if not saving:
+                    print("indicated to train without saving, which is useless, will save")
+                print("training and saving")
+                saving = True
+                new_train(models, testtypes, intersections, saving)
+            elif arguments.mode == "te":
+                print("testing only")
+                graphs = input("Save graphs?")
+                new_test(models, testtypes, intersections, saving, graphs)
+            elif arguments.mode == "t":
+            """
             print("training and testing")
-            graphs = False#input("Save graphs?")
+            graphs = False # TODO arg?
             new_train_and_test(models, testtypes, intersections, saving, graphs)
-    elif sys.argv[1] == "e": 
+
+    elif mode == "evaluate": 
         print("evaluating.")
-        #argv[2] == models (svm or dnn or lstms or nns (dnn and lstms) or all)
-        #argv[3] == testtypes - "," separated 000,001,010,011,100
-        #argv[4] == testOnIntersection - "," separated for multiple
-        #argv[5] is optional 
-        #           if contains "d" then produce distance histograms
-        #           if contains "s" then save scores to files 
-        #           if contains "q" then do only print final outputs
-        #           if contains "l" then load the files. If s and l, will save to excel
-        #           if contains "g" then make graphs and plot (currently unsupported, becoming supported)
-        #       ex: "ds" would make distance histogram values and save
-        model_arg = sys.argv[2]
-        if not model_arg in model_choices:
-            print("invalid model choice of:", model_arg)
-            print("valid choices are:", list(model_choices.keys()))
-            return
-        models = model_choices[sys.argv[2]]
-        testtypes = sys.argv[3].split(",")
-        teston = sys.argv[4]
-        opts = ""
-        if len(sys.argv)>5:
-            opts = sys.argv[5]
-        doEvalThings(models, testtypes, teston, opts)
-    elif sys.argv[1] == "x": #experimental stuffs
+        model_arg = arguments.models
+        models = argument_utils.model_choices[model_arg]
+        testtypes = arguments.test_nums.split(",")
+        teston = arguments.test_intersections
+        doEvalThings(models, testtypes, teston, arguments)
+
+    elif mode == "experimental":
         print("doing crazy things probably")
         #argv[2] == models (svm or dnn or lstms or nns (dnn and lstms) or all)
         #argv[3] == testtypes - "," separated 000,001,010,011,100
         #argv[4] == "," separated test intersections, assume train on all except test
 	#argv[5] == optional - subset, number of training examples - UNUSED
         #argv[6] == s (save), 0 (dont save) - UNUSED, save all
-        model_arg = sys.argv[2]
-        if not model_arg in model_choices:
-            print("invalid model choice of:", model_arg)
-            print("valid choices are:", list(model_choices.keys()))
-            return
-        models = model_choices[sys.argv[2]]
-        testtypes = sys.argv[3].split(",")
-        saving = True #sys.argv[6]
-        str_inters = sys.argv[4].split(",")
-        for test_inters in str_inters:
-          list_test = [int(i) for i in test_inters]
-          train_inters = sorted(list( set([1,2,3,4,5,6,7,8,9]) - set(list_test)))
-          print("test inters:", list_test) 
-          print("train inters:", train_inters)
-          intersections = ([int(i) for i in test_inters],[int(i) for i in train_inters])
-          new_train_and_test(models, testtypes, intersections, saving, False, exper=True)
-    elif sys.argv[1] == "h":
-        print("options are a - augment, f - featurize, tr - train, te - test, t - train and test")
-        print("secondary options are a=>[], f=>[s or i or n (save general or intersection or dont save)], tr/te/t=>[models, [intersections], y/n (save), optional size of subset]")
-    else:
-        print ("invalid argument:", sys.argv[1], "options are a - augment, f - featurize, tr - train, te - test, t - train and test")
+        model_arg = arguments.models
+        models = argument_utils.model_choices[model_arg]
+        testtypes = arguments.test_nums.split(",")
+        str_inters = arguments.test_intersections.split(",")
+        saving = True # TODO arg?
 
-main()
+        for test_inters in str_inters:
+            list_test = [int(i) for i in test_inters]
+            train_inters = sorted(list( set([1,2,3,4,5,6,7,8,9]) - set(list_test)))
+            print("test inters:", list_test) 
+            print("train inters:", train_inters)
+            intersections = ([int(i) for i in test_inters],[int(i) for i in train_inters])
+            new_train_and_test(models, testtypes, intersections, saving, False, exper=True)
+    else:
+        print ("invalid argument:", arguments.mode, "options are a - augment, f - featurize, tr - train, te - test, t - train and test")
+
+if __name__ == "__main__":
+    main(argument_utils.parse_args())

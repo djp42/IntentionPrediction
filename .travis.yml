@@ -1,0 +1,23 @@
+os: linux
+sudo: required
+dist: xenial
+language: python
+cache: 
+  - pip
+python: '3.5.2'
+
+before_script:
+  - pip install -U -r requirements.txt
+  - pip install -U -r requirements_test.txt
+
+script:
+  - ./build.sh
+  - source ${HOME}/.bashrc
+  - travis_wait 50 pytest --cov-config=.coveragerc --cov=.
+
+after_success:
+  - coveralls
+
+notifications:
+  email: false
+
