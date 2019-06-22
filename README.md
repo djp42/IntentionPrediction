@@ -1,6 +1,6 @@
 | Testing | Coverage |
 | :-----: | :------: | 
-| [![Build Status](https://travis-ci.org/djp42/IntentionPrediction.svg?branch=SpringCleaning2019)](https://travis-ci.org/djp42/IntentionPrediction) | [![Coverage Status](https://coveralls.io/repos/github/djp42/IntentionPrediction/badge.svg?branch=SpringCleaning2019)](https://coveralls.io/github/djp42/IntentionPrediction?branch=SpringCleaning2019) |
+| [![Build Status](https://travis-ci.org/djp42/IntentionPrediction.svg?branch=master)](https://travis-ci.org/djp42/IntentionPrediction) | [![Coverage Status](https://coveralls.io/repos/github/djp42/IntentionPrediction/badge.svg?branch=master)](https://coveralls.io/github/djp42/IntentionPrediction?branch=master) |
 
 # IntentionPrediction
 This repo is used to predict the intentions of human drivers as the approach intersections. 
